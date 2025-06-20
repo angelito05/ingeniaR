@@ -44,9 +44,9 @@
                 android:id="@+id/btnEntrar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:hint="Entrar"
                 android:padding="8dp"
-                android:textColorHint="@color/white"
-                android:hint="Login"/>
+                android:textColorHint="@color/white" />
 
             <TextView
                 android:id="@+id/txtregis"
