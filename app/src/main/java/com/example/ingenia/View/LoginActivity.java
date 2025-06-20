@@ -20,7 +20,7 @@ public class LoginActivity extends AppCompatActivity {
     ActivityLoginBinding binding;
 
     String user1 = "admin";
-    String user2 = "Angelito";
+    String user3 = "Angelito";
     String user1pas = "admin123";
 
     @SuppressLint("ClickableViewAccessibility")
@@ -41,7 +41,7 @@ public class LoginActivity extends AppCompatActivity {
             String user= binding.txtUsuario.getText().toString();
             String password = binding.txtContra.getText().toString();
 
-            if(user.equals(user1) || user.equals(user2)){
+            if(user.equals(user1) || user.equals(user3)){
                 if(password.equals(user1pas)){
                     Intent int1 = new Intent(getApplicationContext(), InicioActivity.class);
                     int1.putExtra("usuario",user);
