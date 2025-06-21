@@ -83,9 +83,9 @@ public class LoginActivity extends AppCompatActivity {
 
             return false;
         });
-        binding.txtregis.setOnClickListener(
+        /*binding.txtregis.setOnClickListener(
                 v -> startActivity(new Intent(this, MainActivity.class))
-        );
+        );*/
         
     }
 }

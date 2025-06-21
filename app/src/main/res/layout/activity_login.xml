@@ -7,6 +7,15 @@
     android:layout_height="match_parent"
     tools:context=".View.LoginActivity">
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="190dp"
+        android:layout_marginTop="28dp"
+        android:background="#AAFFFFFF"
+        android:src="@mipmap/logo_foreground"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="8dp" />
+
     <androidx.cardview.widget.CardView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -34,17 +43,17 @@
                 android:id="@+id/txtContra"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:drawableEnd="@drawable/sharp_visibility_off"
                 android:hint="Contraseña"
                 android:inputType="textPassword"
-                android:padding="12dp"
-                android:paddingEnd="8dp" />
+                android:paddingEnd="8dp"
+                android:drawableEnd="@drawable/sharp_visibility_off"
+                android:padding="12dp"/>
 
             <Button
                 android:id="@+id/btnEntrar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:hint="Iniciar Sesion"
+                android:hint="Entrar"
                 android:padding="8dp"
                 android:textColorHint="@color/white" />
 
