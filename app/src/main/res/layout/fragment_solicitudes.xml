@@ -1,16 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".View.SolicitudesFragment"
-    android:background="#FFEB3B"  > <!-- Amarillo -->
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#FFFFFF">
 
-
-    <!-- TODO: Update blank fragment layout -->
+    <!-- Título -->
     <TextView
+        android:id="@+id/tituloSolicitudes"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:text="SOLICITUDES"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="16dp" />
 
-</FrameLayout>
+    <!-- Contadores -->
+    <TextView
+        android:id="@+id/contadorTotal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Total de solicitudes: 0"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/contadorAprobadas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Aprobadas: 0"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/contadorRechazadas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Rechazadas: 0"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- RecyclerView para solicitudes -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerSolicitudes"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+</LinearLayout>

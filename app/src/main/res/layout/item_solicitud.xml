@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="#E1E4FD"
+    android:padding="12dp"
+    android:layout_marginTop="8dp"
+    android:gravity="center_vertical"
+    android:elevation="2dp">
+
+    <!-- Texto de la solicitud -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/nombre"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="RONALD LEYVA"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/detalles"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CURP VERIFICADA\nINE VERIFICADA\nPLAZO 6-12 MESES\nMONTO: $6,000"
+            android:textSize="14sp"
+            android:textColor="#000000" />
+    </LinearLayout>
+
+    <!-- Icono del estado -->
+    <ImageView
+        android:id="@+id/iconoEstado"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_check"
+        app:tint="#4CAF50"
+        android:contentDescription="Estado" />
+</LinearLayout>
