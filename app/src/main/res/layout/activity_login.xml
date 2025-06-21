@@ -34,17 +34,17 @@
                 android:id="@+id/txtContra"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:drawableEnd="@drawable/sharp_visibility_off"
                 android:hint="Contraseña"
                 android:inputType="textPassword"
-                android:paddingEnd="8dp"
-                android:drawableEnd="@drawable/sharp_visibility_off"
-                android:padding="12dp"/>
+                android:padding="12dp"
+                android:paddingEnd="8dp" />
 
             <Button
                 android:id="@+id/btnEntrar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:hint="Entrar"
+                android:hint="Iniciar Sesion"
                 android:padding="8dp"
                 android:textColorHint="@color/white" />
 
