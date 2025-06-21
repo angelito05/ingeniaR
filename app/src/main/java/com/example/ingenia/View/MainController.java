@@ -1,4 +1,4 @@
-package com.example.ingenia.Controller;
+package com.example.ingenia.View;
 import android.widget.EditText;
 
 import com.example.ingenia.Model.Usuario;

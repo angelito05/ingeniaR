@@ -7,14 +7,9 @@ import android.text.InputType;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import com.example.ingenia.Controller.MainController;
 import com.example.ingenia.Model.Usuario;
 import com.example.ingenia.Model.Validator;
 import com.example.ingenia.R;
