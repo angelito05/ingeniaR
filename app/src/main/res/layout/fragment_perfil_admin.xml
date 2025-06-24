@@ -2,8 +2,8 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp"
-    android:background="#F5F5F5">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="24dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,10 +16,8 @@
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:src="@drawable/ic_profile"
-
             android:layout_marginBottom="16dp"
-
-            android:padding="16dp" />
+            android:padding="16dp"/>
 
         <TextView
             android:id="@+id/tvNombreCompleto"
@@ -70,9 +68,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Cerrar sesión"
-            android:textColor="@android:color/white"
             android:backgroundTint="#F44336" /> <!-- Rojo fuerte -->
-
 
     </LinearLayout>
 </ScrollView>

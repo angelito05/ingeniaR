@@ -2,16 +2,13 @@
 <resources>
     <color name="primary_green">#108763</color>
     <color name="secondary_blue">#0C70F7</color>
-    <color name="purple_accent">#BB86FC</color>
+    <color name="purple_accent">#9C27B0</color>
 
-    <color name="background">#FFFFFF</color> <!-- Fondo general -->
-    <color name="card_background">#F2F2F2</color> <!-- Tarjetas y bloques -->
-
-    <color name="text_primary">#1C1C1E</color>
-    <color name="text_secondary">#3C3C43</color>
+    <color name="background">#F8F8F8</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
 
     <color name="button_background">#108763</color>
     <color name="button_text">#FFFFFF</color>
-
-    <color name="image_background">#AAFFFFFF</color> <!-- Fondo semitransparente para imágenes -->
+    <color name="card_background">#FFFFFF</color>
 </resources>

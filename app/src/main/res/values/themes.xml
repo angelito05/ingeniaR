@@ -1,6 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+
     <!-- Tema base para modo claro -->
-    <style name="Theme.CrediGo" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.CrediGo" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Colores principales -->
         <item name="colorPrimary">@color/primary_green</item>
         <item name="colorPrimaryVariant">@color/primary_green</item>
@@ -18,12 +19,25 @@
         <item name="colorButtonNormal">@color/button_background</item>
         <item name="android:textColor">@color/button_text</item>
 
-        <!-- Otros opcionales -->
+        <!-- CardView personalizado -->
         <item name="cardViewStyle">@style/CardViewStyle</item>
+
+        <!-- Botón personalizado global -->
+        <item name="materialButtonStyle">@style/Widget.CrediGo.Button</item>
     </style>
 
-    <!-- Estilo de tarjeta opcional -->
+    <!-- Estilo para CardViews -->
     <style name="CardViewStyle" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">6dp</item>
         <item name="cardBackgroundColor">@color/card_background</item>
     </style>
+
+    <!-- Estilo para botones -->
+    <style name="Widget.CrediGo.Button" parent="Widget.MaterialComponents.Button">
+        <item name="android:textColor">@color/button_text</item>
+        <item name="backgroundTint">@color/primary_green</item>
+        <item name="cornerRadius">12dp</item>
+    </style>
+
 </resources>

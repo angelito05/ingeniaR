@@ -44,11 +44,11 @@
                 android:id="@+id/txtContra"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:drawableEnd="@drawable/sharp_visibility_off"
                 android:hint="Contraseña"
                 android:inputType="textPassword"
+                android:minHeight="48dp"
                 android:paddingEnd="8dp"
-                android:drawableEnd="@drawable/sharp_visibility_off"
-                android:padding="12dp"
                 tools:ignore="Autofill,HardcodedText,RtlSymmetry" />
 
             <Button
