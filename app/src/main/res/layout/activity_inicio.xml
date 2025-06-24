@@ -20,8 +20,7 @@
             android:text="Bienvenido "
             android:textAlignment="center"
             android:padding="9dp"
-            android:textSize="20dp"
-            android:textColor="@color/white"/>
+            android:textSize="20dp"/>
 
     </LinearLayout>
 

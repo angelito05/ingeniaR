@@ -1,9 +1,29 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.Ingenia" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <!-- Tema base para modo claro -->
+    <style name="Theme.CrediGo" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- Colores principales -->
+        <item name="colorPrimary">@color/primary_green</item>
+        <item name="colorPrimaryVariant">@color/primary_green</item>
+        <item name="colorSecondary">@color/secondary_blue</item>
+        <item name="colorSecondaryVariant">@color/purple_accent</item>
+
+        <!-- Fondo general -->
+        <item name="android:windowBackground">@color/background</item>
+
+        <!-- Textos -->
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+
+        <!-- Botones -->
+        <item name="colorButtonNormal">@color/button_background</item>
+        <item name="android:textColor">@color/button_text</item>
+
+        <!-- Otros opcionales -->
+        <item name="cardViewStyle">@style/CardViewStyle</item>
     </style>
 
-    <style name="Theme.Ingenia" parent="Base.Theme.Ingenia" />
+    <!-- Estilo de tarjeta opcional -->
+    <style name="CardViewStyle" parent="Widget.MaterialComponents.CardView">
+        <item name="cardBackgroundColor">@color/card_background</item>
+    </style>
 </resources>

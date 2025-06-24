@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_green">#108763</color>
+    <color name="secondary_blue">#0C70F7</color>
+    <color name="purple_accent">#BB86FC</color>
+
+    <color name="background">#121212</color>
+    <color name="card_background">#2C2C2E</color>
+
+    <color name="text_primary">#E5E5EA</color>
+    <color name="text_secondary">#8E8E93</color>
+
+    <color name="button_background">#108763</color>
+    <color name="button_text">#FFFFFF</color>
+
+    <color name="image_background">#AA000000</color> <!-- Fondo semitransparente para imágenes -->
+</resources>
+
