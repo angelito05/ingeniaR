@@ -13,7 +13,8 @@
         android:layout_marginTop="28dp"
         android:src="@mipmap/logo2_foreground"
         app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="8dp" />
+        tools:layout_editor_absoluteX="8dp"
+        tools:ignore="ContentDescription" />
 
     <androidx.cardview.widget.CardView
         android:layout_width="wrap_content"
@@ -36,7 +37,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Usuario"
-                tools:ignore="TouchTargetSizeCheck" />
+                android:importantForAutofill="no"
+                tools:ignore="HardcodedText,TextFields,TouchTargetSizeCheck" />
 
             <EditText
                 android:id="@+id/txtContra"
@@ -46,14 +48,16 @@
                 android:inputType="textPassword"
                 android:paddingEnd="8dp"
                 android:drawableEnd="@drawable/sharp_visibility_off"
-                android:padding="12dp"/>
+                android:padding="12dp"
+                tools:ignore="Autofill,HardcodedText,RtlSymmetry" />
 
             <Button
                 android:id="@+id/btnEntrar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="Entrar"
-                android:padding="8dp"/>
+                android:padding="8dp"
+                tools:ignore="HardcodedText" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

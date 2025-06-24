@@ -22,6 +22,7 @@ public class LoginActivity extends AppCompatActivity {
     String user1 = "admin";
     String user3 = "Angelito";
     String user1pas = "admin123";
+    String adminpass = "admin321";
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -41,17 +42,33 @@ public class LoginActivity extends AppCompatActivity {
             String user= binding.txtUsuario.getText().toString();
             String password = binding.txtContra.getText().toString();
 
-            if(user.equals(user1) || user.equals(user3)){
-                if(password.equals(user1pas)){
-                    Intent int1 = new Intent(getApplicationContext(), InicioActivity.class);
-                    int1.putExtra("usuario",user);
-                    startActivity(int1);
-                } else {
-                    Toast.makeText(LoginActivity.this, "Contraseña Incorrecta", Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                Toast.makeText(LoginActivity.this, "Usuario Incorrecto", Toast.LENGTH_SHORT).show();
+            switch (user) {
+                case "Angelito":
+
+                    if (password.equals(user1pas)) {
+                        Intent int1 = new Intent(getApplicationContext(), InicioActivity.class);
+                        int1.putExtra("usuario", user);
+                        startActivity(int1);
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Contraseña Incorrecta", Toast.LENGTH_SHORT).show();
+                    }
+                    break;
+
+                case "admin":
+                    if (password.equals(adminpass)) {
+                        Intent intAdmin = new Intent(getApplicationContext(), admin.class);
+                        intAdmin.putExtra("usuario", user);
+                        startActivity(intAdmin);
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Contraseña de administrador incorrecta", Toast.LENGTH_SHORT).show();
+                    }
+                    break;
+
+                default:
+                    Toast.makeText(LoginActivity.this, "Usuario Incorrecto", Toast.LENGTH_SHORT).show();
+                    break;
             }
+
         });
 
         final boolean[] esVisible = {false};
@@ -83,9 +100,6 @@ public class LoginActivity extends AppCompatActivity {
 
             return false;
         });
-        /*binding.txtregis.setOnClickListener(
-                v -> startActivity(new Intent(this, MainActivity.class))
-        );*/
         
     }
 }
