@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.ingenia.Model.Solicitud;
+import com.example.ingenia.Model.SolicitudRepository;
 import com.example.ingenia.Adapter.SolicitudAdapter;
 import com.example.ingenia.R;
 
@@ -40,7 +41,6 @@ public class SolicitudesFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Referencias a vistas
         recyclerView = view.findViewById(R.id.recyclerSolicitudes);
         total = view.findViewById(R.id.contadorTotal);
         aprobadas = view.findViewById(R.id.contadorAprobadas);
@@ -48,23 +48,13 @@ public class SolicitudesFragment extends Fragment {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Lista de datos (temporal, de prueba)
-        List<Solicitud> solicitudes = new ArrayList<>();
-        solicitudes.add(new Solicitud("RONALD LEYVA",
-                "CURP VERIFICADA\nINE VERIFICADA\nPLAZO 6-12 MESES\nMONTO: $6,000",
-                Solicitud.Estado.APROBADA));
+        // Lista de prueba con trabajador incluido
+        List<Solicitud> solicitudes = SolicitudRepository.listaSolicitudes;
 
-        solicitudes.add(new Solicitud("ANGELITO ISSAC",
-                "CURP VERIFICADA\nINE VERIFICADA\nPLAZO 6-12 MESES\nMONTO: $6,000",
-                Solicitud.Estado.PENDIENTE));
 
-        solicitudes.add(new Solicitud("MARCO ASTUDILLO",
-                "CURP VERIFICADA\nINE VERIFICADA\nPLAZO 6-12 MESES\nMONTO: $6,000",
-                Solicitud.Estado.APROBADA));
+        recyclerView.setAdapter(new SolicitudAdapter(requireContext(), solicitudes, true));
 
-        recyclerView.setAdapter(new SolicitudAdapter(requireContext(), solicitudes));
-
-        // Actualizar contadores
+        // Contadores
         int aprobadasCount = 0, rechazadasCount = 0;
         for (Solicitud s : solicitudes) {
             if (s.estado == Solicitud.Estado.APROBADA) aprobadasCount++;
