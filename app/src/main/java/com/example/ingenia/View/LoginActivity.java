@@ -20,7 +20,7 @@ public class LoginActivity extends AppCompatActivity {
     ActivityLoginBinding binding;
 
     String user1 = "admin";
-    String user3 = "Angelito";
+    String user3 = "Ronald123";
     String user1pas = "admin123";
     String adminpass = "admin321";
 
@@ -42,7 +42,7 @@ public class LoginActivity extends AppCompatActivity {
             String password = binding.txtContra.getText().toString();
 
             switch (user) {
-                case "Angelito":
+                case "Ronald123":
 
                     if (password.equals(user1pas)) {
                         Intent int1 = new Intent(getApplicationContext(), InicioActivity.class);
