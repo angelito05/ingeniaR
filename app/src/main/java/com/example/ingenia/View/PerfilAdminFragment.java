@@ -18,8 +18,6 @@ import com.example.ingenia.R;
 
 public class PerfilAdminFragment extends Fragment {
 
-    PerfilAdminFragment binding;
-
     public PerfilAdminFragment() {
         // Constructor vacío obligatorio
     }

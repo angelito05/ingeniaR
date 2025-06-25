@@ -15,6 +15,7 @@
         android:textSize="24sp"
         android:textStyle="bold"
         android:gravity="center"
+        android:textColor="@color/text_primary"
         android:layout_marginBottom="16dp" />
 
     <!-- Contadores -->
@@ -23,6 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Total de solicitudes: 0"
+        android:textColor="@color/text_primary"
         android:textSize="16sp" />
 
     <TextView
@@ -30,6 +32,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Aprobadas: 0"
+        android:textColor="@color/text_primary"
         android:textSize="16sp" />
 
     <TextView
@@ -37,6 +40,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Rechazadas: 0"
+        android:textColor="@color/text_primary"
         android:textSize="16sp"
         android:layout_marginBottom="8dp" />
 

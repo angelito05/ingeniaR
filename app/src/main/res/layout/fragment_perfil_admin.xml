@@ -26,12 +26,14 @@
             android:text="Nombre Apellido"
             android:textStyle="bold"
             android:textSize="20sp"
+            android:textColor="@color/text_primary"
             android:layout_marginBottom="8dp" />
 
         <TextView
             android:id="@+id/tvUsername"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"
             android:text="Username: admin123"
             android:layout_marginBottom="4dp" />
 
@@ -39,6 +41,7 @@
             android:id="@+id/tvCorreo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"
             android:text="Correo: admin@example.com"
             android:layout_marginBottom="4dp" />
 
@@ -46,6 +49,7 @@
             android:id="@+id/tvRol"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"
             android:text="Rol: Administrador"
             android:layout_marginBottom="4dp" />
 
