@@ -1,6 +1,7 @@
 package com.example.ingenia.View;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +17,8 @@ import androidx.fragment.app.Fragment;
 import com.example.ingenia.R;
 
 public class PerfilAdminFragment extends Fragment {
+
+    PerfilAdminFragment binding;
 
     public PerfilAdminFragment() {
         // Constructor vacío obligatorio
@@ -36,6 +39,7 @@ public class PerfilAdminFragment extends Fragment {
         TextView tvRol = view.findViewById(R.id.tvRol);
         TextView tvEstado = view.findViewById(R.id.tvEstado);
         Button btnEditarPerfil = view.findViewById(R.id.btnEditarPerfil);
+        Button btnCerrarSesion = view.findViewById(R.id.btnCerrarSesion);
 
         // 2. Datos simulados del administrador
         String nombre = "Oscar";
@@ -90,6 +94,12 @@ public class PerfilAdminFragment extends Fragment {
                     })
                     .setNegativeButton("Cancelar", null)
                     .show();
+        });
+        btnCerrarSesion.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            getActivity().finish();
         });
 
         return view;

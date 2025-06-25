@@ -11,10 +11,10 @@
         android:layout_width="match_parent"
         android:layout_height="190dp"
         android:layout_marginTop="28dp"
-        android:background="#AAFFFFFF"
-        android:src="@mipmap/logo_foreground"
+        android:src="@mipmap/logo2_foreground"
         app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="8dp" />
+        tools:layout_editor_absoluteX="8dp"
+        tools:ignore="ContentDescription" />
 
     <androidx.cardview.widget.CardView
         android:layout_width="wrap_content"
@@ -37,17 +37,19 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Usuario"
-                tools:ignore="TouchTargetSizeCheck" />
+                android:importantForAutofill="no"
+                tools:ignore="HardcodedText,TextFields,TouchTargetSizeCheck" />
 
             <EditText
                 android:id="@+id/txtContra"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:drawableEnd="@drawable/sharp_visibility_off"
                 android:hint="Contraseña"
                 android:inputType="textPassword"
+                android:minHeight="48dp"
                 android:paddingEnd="8dp"
-                android:drawableEnd="@drawable/sharp_visibility_off"
-                android:padding="12dp"/>
+                tools:ignore="Autofill,HardcodedText,RtlSymmetry" />
 
             <Button
                 android:id="@+id/btnEntrar"
@@ -55,20 +57,7 @@
                 android:layout_height="wrap_content"
                 android:hint="Entrar"
                 android:padding="8dp"
-                android:textColorHint="@color/white" />
-
-            <TextView
-                android:id="@+id/txtregis"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:paddingTop="8dp"
-                android:text="¿No tienes una cuenta? Registrate"
-                android:textColor="#315AF2"
-                android:textSize="12dp"
-                android:textStyle="bold"
-                tools:ignore="TextSizeCheck" />
-
+                tools:ignore="HardcodedText" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
