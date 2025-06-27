@@ -4,101 +4,127 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.ingenia.Model.LoginRequest;
+import com.example.ingenia.Model.User;
 import com.example.ingenia.R;
+import com.example.ingenia.api.UsuarioService;
 import com.example.ingenia.databinding.ActivityLoginBinding;
+
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class LoginActivity extends AppCompatActivity {
     ActivityLoginBinding binding;
-
-    String user1 = "admin";
-    String user3 = "Ronald123";
-    String user1pas = "admin123";
-    String adminpass = "admin321";
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
         binding.btnEntrar.setOnClickListener(v -> {
-            //obtener valores de usuario y password
-            String user= binding.txtUsuario.getText().toString();
-            String password = binding.txtContra.getText().toString();
+            String user = binding.txtUsuario.getText().toString().trim();
+            String password = binding.txtContra.getText().toString().trim();
 
-            switch (user) {
-                case "Ronald123":
-
-                    if (password.equals(user1pas)) {
-                        Intent int1 = new Intent(getApplicationContext(), InicioActivity.class);
-                        int1.putExtra("usuario", user);
-                        startActivity(int1);
-                    } else {
-                        Toast.makeText(LoginActivity.this, "Contraseña Incorrecta", Toast.LENGTH_SHORT).show();
-                    }
-                    break;
-
-                case "admin":
-                    if (password.equals(adminpass)) {
-                        Intent intAdmin = new Intent(getApplicationContext(), admin.class);
-                        intAdmin.putExtra("usuario", user);
-                        startActivity(intAdmin);
-                    } else {
-                        Toast.makeText(LoginActivity.this, "Contraseña de administrador incorrecta", Toast.LENGTH_SHORT).show();
-                    }
-                    break;
-
-                default:
-                    Toast.makeText(LoginActivity.this, "Usuario Incorrecto", Toast.LENGTH_SHORT).show();
-                    break;
+            if (user.isEmpty() || password.isEmpty()) {
+                Toast.makeText(LoginActivity.this, "Llena ambos campos", Toast.LENGTH_SHORT).show();
+                return;
             }
 
+            LoginRequest loginRequest = new LoginRequest(user, password);
+
+            // --- Logging Interceptor ---
+            HttpLoggingInterceptor logging = new HttpLoggingInterceptor(message -> Log.d("API_LOG", message));
+            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .addInterceptor(logging)
+                    .build();
+
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl("http://192.168.0.9:5000/") // Usa tu IP local
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .client(client)
+                    .build();
+
+            UsuarioService usuarioService = retrofit.create(UsuarioService.class);
+
+            usuarioService.login(loginRequest).enqueue(new Callback<User>() {
+                @Override
+                public void onResponse(Call<User> call, Response<User> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        User usuario = response.body();
+
+                        if (usuario.id_rol == 1) {
+                            Intent intAdmin = new Intent(LoginActivity.this, admin.class);
+                            intAdmin.putExtra("usuario", usuario.username);
+                            startActivity(intAdmin);
+                        } else if (usuario.id_rol == 2) {
+                            Intent intTrab = new Intent(LoginActivity.this, InicioActivity.class);
+                            intTrab.putExtra("usuario", usuario.username);
+                            startActivity(intTrab);
+                        } else {
+                            Toast.makeText(LoginActivity.this, "Rol no reconocido", Toast.LENGTH_SHORT).show();
+                        }
+
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show();
+                        Log.e("API_ERROR", "Código: " + response.code() + ", mensaje: " + response.message());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<User> call, Throwable t) {
+                    Toast.makeText(LoginActivity.this, "Error de conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                    Log.e("API_ERROR", "Falló la petición: ", t);
+                }
+            });
         });
 
         final boolean[] esVisible = {false};
 
         binding.txtContra.setOnTouchListener((v, event) -> {
-            final int DRAWABLE_END = 2; // 0=left, 1=top, 2=right, 3=bottom
-
+            final int DRAWABLE_END = 2;
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 if (event.getRawX() >= (binding.txtContra.getRight()
                         - binding.txtContra.getCompoundDrawables()[DRAWABLE_END].getBounds().width())) {
 
-                    esVisible[0] = !esVisible[0];  // alternar estado
+                    esVisible[0] = !esVisible[0];
 
                     if (esVisible[0]) {
-                        // Mostrar contraseña
                         binding.txtContra.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
                         binding.txtContra.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.sharp_visibility, 0);
                     } else {
-                        // Ocultar contraseña
                         binding.txtContra.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
                         binding.txtContra.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.sharp_visibility_off, 0);
                     }
 
-                    // Mantener cursor al final
                     binding.txtContra.setSelection(binding.txtContra.getText().length());
                     return true;
                 }
             }
-
             return false;
         });
-        
     }
 }
