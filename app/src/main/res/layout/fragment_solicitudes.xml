@@ -11,11 +11,11 @@
         android:id="@+id/tituloSolicitudes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/text_primary"
         android:text="SOLICITUDES"
         android:textSize="24sp"
         android:textStyle="bold"
         android:gravity="center"
-        android:textColor="@color/text_primary"
         android:layout_marginBottom="16dp" />
 
     <!-- Contadores -->

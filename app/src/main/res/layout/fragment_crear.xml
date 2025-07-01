@@ -2,7 +2,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/background_light"
+    android:background="@color/background"
     android:padding="16dp">
 
     <LinearLayout
@@ -17,7 +17,7 @@
             android:layout_marginTop="32dp"
             app:cardElevation="8dp"
             app:cardCornerRadius="16dp"
-            app:cardBackgroundColor="@android:color/white">
+            style="@style/CardViewStyle">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -28,10 +28,10 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
                     android:text="Registrar Usuario"
                     android:textSize="22sp"
                     android:textStyle="bold"
-                    android:textColor="@android:color/black"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginBottom="24dp" />
 
@@ -132,7 +132,7 @@
                     android:text="Registrar"
                     android:layout_marginTop="24dp"
                     android:layout_gravity="center"
-                    style="@style/Widget.Material3.Button"
+                    style="@style/Widget.CrediGo.Button"
                     app:cornerRadius="12dp" />
 
 
