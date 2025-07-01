@@ -16,6 +16,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.ingenia.Model.LoginRequest;
 import com.example.ingenia.Model.User;
 import com.example.ingenia.R;
+import com.example.ingenia.api.ApiConfig;
 import com.example.ingenia.api.UsuarioService;
 import com.example.ingenia.databinding.ActivityLoginBinding;
 
@@ -63,10 +64,11 @@ public class LoginActivity extends AppCompatActivity {
                     .build();
 
             Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl("http://192.168.0.9:5000/") // Usa tu IP local
+                    .baseUrl(ApiConfig.BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
                     .client(client)
                     .build();
+
 
             UsuarioService usuarioService = retrofit.create(UsuarioService.class);
 
