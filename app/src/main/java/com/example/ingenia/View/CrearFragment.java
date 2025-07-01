@@ -43,12 +43,14 @@ public class CrearFragment extends Fragment {
         spinnerRol = view.findViewById(R.id.spinnerRol);
         btnRegistrar = view.findViewById(R.id.btnRegistrar);
 
-        // Configurar spinner de roles
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                getContext(), android.R.layout.simple_spinner_item,
-                new String[]{"Administrador", "Trabajador"});
+                getContext(),
+                R.layout.spinner_item, // layout personalizado para mostrar el texto
+                new String[]{"Administrador", "Trabajador"}
+        );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerRol.setAdapter(adapter);
+
 
         btnRegistrar.setOnClickListener(v -> registrarUsuario());
         return view;
