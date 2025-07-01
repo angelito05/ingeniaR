@@ -1,5 +1,6 @@
 package com.example.ingenia.View;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,10 +11,21 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.example.ingenia.Model.Solicitud;
-import androidx.core.content.ContextCompat;
-import com.example.ingenia.Model.SolicitudRepository;
+import com.example.ingenia.Model.ClienteRequest;
+import com.example.ingenia.Model.Cliente;
 import com.example.ingenia.R;
+import com.example.ingenia.api.ApiConfig;
+import com.example.ingenia.api.UsuarioService;
+
+import java.util.Calendar;
+
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class CrearSolicitudFragment extends Fragment {
 
@@ -25,21 +37,11 @@ public class CrearSolicitudFragment extends Fragment {
 
     private boolean datosValidados = false;
 
-    public CrearSolicitudFragment() {
-        // Constructor vacío requerido
-    }
-
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_crear_solicitud, container, false);
-    }
+        View view = inflater.inflate(R.layout.fragment_crear_solicitud, container, false);
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        // Vincular vistas
         inputNombre = view.findViewById(R.id.input_nombre);
         inputApellidoPaterno = view.findViewById(R.id.input_apellido_paterno);
         inputApellidoMaterno = view.findViewById(R.id.input_apellido_materno);
@@ -58,58 +60,110 @@ public class CrearSolicitudFragment extends Fragment {
         btnValidar = view.findViewById(R.id.btn_validar_datos);
         btnCrear = view.findViewById(R.id.btn_crear_solicitud);
 
-        btnEscanear.setOnClickListener(v -> simularLlenadoOCR());
-        btnValidar.setOnClickListener(v -> simularValidacionDatos());
+        // 🎯 DatePicker
+        inputFechaNacimiento.setOnClickListener(v -> {
+            final Calendar calendar = Calendar.getInstance();
+            int year = calendar.get(Calendar.YEAR);
+            int month = calendar.get(Calendar.MONTH);
+            int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-        btnCrear.setOnClickListener(v -> {
-            if (!datosValidados) {
-                Toast.makeText(getContext(), "Primero valida los datos", Toast.LENGTH_SHORT).show();
-                return;
-            }
+            DatePickerDialog picker = new DatePickerDialog(getContext(), (view1, y, m, d) -> {
+                String fechaFormateada = String.format("%04d-%02d-%02d", y, m + 1, d);
+                inputFechaNacimiento.setText(fechaFormateada);
+            }, year, month, day);
 
-            // Combinar nombre completo
-            String nombreCompleto = inputNombre.getText().toString().trim() + " " +
-                    inputApellidoPaterno.getText().toString().trim() + " " +
-                    inputApellidoMaterno.getText().toString().trim();
-
-            String detalles = "CURP: " + inputCurp.getText().toString().trim() +
-                    "\nINE: " + inputClaveElector.getText().toString().trim() +
-                    "\nDirección: " + inputCalle.getText().toString().trim() + ", " +
-                    inputColonia.getText().toString().trim() + ", " +
-                    inputCiudad.getText().toString().trim() + ", " +
-                    inputEstado.getText().toString().trim() +
-                    "\nCP: " + inputCp.getText().toString().trim();
-
-            // Nombre del trabajador (puedes reemplazarlo luego con sesión real)
-            String nombreTrabajador = "Ronald Leyva";
-
-            Solicitud nueva = new Solicitud(
-                    nombreCompleto,
-                    detalles,
-                    Solicitud.Estado.PENDIENTE,
-                    nombreTrabajador
-            );
-
-            SolicitudRepository.listaSolicitudes.add(nueva);
-
-            Toast.makeText(getContext(), "Solicitud creada correctamente", Toast.LENGTH_SHORT).show();
-
-            limpiarFormulario();
+            picker.show();
         });
 
+        btnEscanear.setOnClickListener(v -> simularLlenadoOCR());
+        btnValidar.setOnClickListener(v -> simularValidacionDatos());
+        btnCrear.setOnClickListener(v -> crearCliente());
+
         btnCrear.setEnabled(false);
+        return view;
+    }
+
+    private void crearCliente() {
+        if (!datosValidados) {
+            Toast.makeText(getContext(), "Primero valida los datos", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String nombre = inputNombre.getText().toString().trim();
+        String apellidoP = inputApellidoPaterno.getText().toString().trim();
+        String apellidoM = inputApellidoMaterno.getText().toString().trim();
+        String curp = inputCurp.getText().toString().trim();
+        String claveElector = inputClaveElector.getText().toString().trim();
+        String fechaNacimiento = inputFechaNacimiento.getText().toString().trim();
+        String genero = inputGenero.getText().toString().trim();
+        String calle = inputCalle.getText().toString().trim();
+        String colonia = inputColonia.getText().toString().trim();
+        String ciudad = inputCiudad.getText().toString().trim();
+        String estado = inputEstado.getText().toString().trim();
+        String codigoPostal = inputCp.getText().toString().trim();
+
+        if (nombre.isEmpty() || curp.isEmpty()) {
+            Toast.makeText(getContext(), "Nombre y CURP son obligatorios", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ClienteRequest request = new ClienteRequest(
+                nombre,
+                apellidoP,
+                apellidoM,
+                curp,
+                claveElector,
+                fechaNacimiento,
+                genero,
+                calle,
+                colonia,
+                ciudad,
+                estado,
+                codigoPostal
+        );
+
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient client = new OkHttpClient.Builder().addInterceptor(logging).build();
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(ApiConfig.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
+                .build();
+
+        UsuarioService service = retrofit.create(UsuarioService.class);
+
+        service.crearCliente(request).enqueue(new Callback<Cliente>() {
+            @Override
+            public void onResponse(Call<Cliente> call, Response<Cliente> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Toast.makeText(getContext(), "Cliente creado con ID: " + response.body().idCliente, Toast.LENGTH_LONG).show();
+                    limpiarFormulario();
+                    datosValidados = false;
+                    btnCrear.setEnabled(false);
+                } else {
+                    Toast.makeText(getContext(), "Error al crear cliente: " + response.code(), Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Cliente> call, Throwable t) {
+                Toast.makeText(getContext(), "Falla en la conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void simularLlenadoOCR() {
-        inputNombre.setText("Antonio");
+        inputNombre.setText("Karen");
         inputApellidoPaterno.setText("Bello");
         inputApellidoMaterno.setText("Ramírez");
         inputCurp.setText("BERA920101HDFLRS05");
         inputClaveElector.setText("BELR920101");
-        inputFechaNacimiento.setText("01/01/1992");
-        inputGenero.setText("Hombre");
-        inputColonia.setText("Centro");
-        inputCalle.setText("Av. Reforma");
+        inputFechaNacimiento.setText("1992-01-01");
+        inputGenero.setText("Femenino");
+        inputColonia.setText("Norte");
+        inputCalle.setText("Av. Insurgentes");
         inputCiudad.setText("CDMX");
         inputEstado.setText("Ciudad de México");
         inputCp.setText("06000");
@@ -119,10 +173,10 @@ public class CrearSolicitudFragment extends Fragment {
 
     private void simularValidacionDatos() {
         labelCurpValida.setText("CURP: VÁLIDA");
-        labelCurpValida.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark));
+        labelCurpValida.setTextColor(requireContext().getColor(android.R.color.holo_green_dark));
 
         labelIneValida.setText("INE: VÁLIDA");
-        labelIneValida.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark));
+        labelIneValida.setTextColor(requireContext().getColor(android.R.color.holo_green_dark));
 
         datosValidados = true;
         btnCrear.setEnabled(true);
@@ -146,7 +200,5 @@ public class CrearSolicitudFragment extends Fragment {
 
         labelCurpValida.setText("");
         labelIneValida.setText("");
-        btnCrear.setEnabled(false);
-        datosValidados = false;
     }
 }

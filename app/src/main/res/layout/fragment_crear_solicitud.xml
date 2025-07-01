@@ -1,27 +1,19 @@
-<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="match_parent" android:layout_height="match_parent"
     android:padding="24dp">
 
     <LinearLayout
-        android:id="@+id/layout_crear_solicitud"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center_horizontal">
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:gravity="center_horizontal">
 
-        <!-- ENCABEZADO -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/text_primary"
             android:text="NUEVA SOLICITUD"
-            android:textSize="22sp"
+            android:textSize="24sp"
             android:textStyle="bold"
-            android:layout_marginBottom="12dp" />
+            android:layout_marginBottom="24dp" />
 
-        <!-- BOTÓN ESCANEAR INE -->
         <Button
             android:id="@+id/btn_escanear_ine"
             android:layout_width="wrap_content"
@@ -29,198 +21,152 @@
             android:text="Escanear INE 📷"
             android:layout_marginBottom="24dp" />
 
-        <!-- DATOS PERSONALES -->
         <EditText
             android:id="@+id/input_nombre"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
+            android:padding="12dp"
             android:hint="Nombre"
-            android:inputType="textPersonName" />
+            android:inputType="textPersonName"
+            android:layout_marginBottom="12dp"/>
 
         <EditText
             android:id="@+id/input_apellido_paterno"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
+            android:padding="12dp"
             android:hint="Apellido Paterno"
-            android:inputType="textPersonName" />
+            android:inputType="textPersonName"
+            android:layout_marginBottom="12dp"/>
 
         <EditText
             android:id="@+id/input_apellido_materno"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
+            android:padding="12dp"
             android:hint="Apellido Materno"
-            android:inputType="textPersonName" />
+            android:inputType="textPersonName"
+            android:layout_marginBottom="12dp"/>
 
         <EditText
             android:id="@+id/input_curp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
+            android:padding="12dp"
             android:hint="CURP"
-            android:inputType="text" />
+            android:inputType="text"
+            android:layout_marginBottom="12dp"/>
 
         <EditText
             android:id="@+id/input_clave_elector"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
+            android:padding="12dp"
             android:hint="Clave de Elector"
-            android:inputType="text" />
+            android:inputType="text"
+            android:layout_marginBottom="12dp"/>
 
         <EditText
             android:id="@+id/input_fecha_nacimiento"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:hint="Fecha de nacimiento"
-            android:focusable="false"
-            android:clickable="true" />
+            android:padding="12dp"
+            android:hint="Fecha de Nacimiento"
+            android:focusable="false" android:clickable="true"
+            android:layout_marginBottom="12dp"/>
 
         <EditText
             android:id="@+id/input_genero"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
+            android:padding="12dp"
             android:hint="Género"
-            android:inputType="text" />
-
-        <!-- DOMICILIO -->
-        <EditText
-            android:id="@+id/input_colonia"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:hint="Colonia"
-            android:inputType="text" />
+            android:inputType="text"
+            android:layout_marginBottom="24dp"/>
 
         <EditText
             android:id="@+id/input_calle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
+            android:padding="12dp"
             android:hint="Calle"
-            android:inputType="text" />
+            android:inputType="text"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/input_colonia"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:padding="12dp"
+            android:hint="Colonia"
+            android:inputType="text"
+            android:layout_marginBottom="12dp"/>
 
         <EditText
             android:id="@+id/input_ciudad"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
+            android:padding="12dp"
             android:hint="Ciudad"
-            android:inputType="text" />
+            android:inputType="text"
+            android:layout_marginBottom="12dp"/>
 
         <EditText
             android:id="@+id/input_estado"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
+            android:padding="12dp"
             android:hint="Estado"
-            android:inputType="text" />
+            android:inputType="text"
+            android:layout_marginBottom="24dp"/>
 
         <EditText
             android:id="@+id/input_cp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
+            android:padding="12dp"
             android:hint="Código Postal"
-            android:inputType="number" />
+            android:inputType="number"
+            android:layout_marginBottom="24dp"/>
 
-        <!-- VALIDACIÓN -->
         <TextView
             android:id="@+id/label_curp_valida"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
             android:text="CURP: SIN VALIDAR"
-            android:textColor="#888888" />
+            android:textColor="#888888"
+            android:layout_marginBottom="4dp" />
 
         <TextView
             android:id="@+id/label_ine_valida"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
             android:text="INE: SIN VALIDAR"
             android:textColor="#888888"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="16dp" />
 
         <Button
             android:id="@+id/btn_validar_datos"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Validar datos" />
-
-        <!-- SECCIÓN DE FINALIZAR SOLICITUD -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#CCCCCC"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="12dp" />
-
-        <EditText
-            android:id="@+id/input_ingreso_mensual"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:hint="Ingreso mensual"
-            android:inputType="numberDecimal" />
-
-        <EditText
-            android:id="@+id/input_monto_solicitado"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Monto solicitado"
-            android:inputType="numberDecimal" />
-
-        <EditText
-            android:id="@+id/input_plazo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Plazo (en meses)"
-            android:inputType="number" />
-
-        <EditText
-            android:id="@+id/input_motivo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Motivo"
-            android:minLines="3"
-            android:inputType="textMultiLine" />
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Validar datos"
+            android:layout_marginBottom="24dp" />
 
         <Button
             android:id="@+id/btn_crear_solicitud"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Crear Solicitud"
-            android:layout_marginTop="16dp"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Solicitar credito"
             android:enabled="false" />
 
     </LinearLayout>
+
 </ScrollView>
