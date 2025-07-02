@@ -1,7 +1,9 @@
 package com.example.ingenia.View;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -77,6 +79,9 @@ public class LoginActivity extends AppCompatActivity {
                 public void onResponse(Call<User> call, Response<User> response) {
                     if (response.isSuccessful() && response.body() != null) {
                         User usuario = response.body();
+
+                        SharedPreferences prefs = getSharedPreferences("credigo_session", Context.MODE_PRIVATE);
+                        prefs.edit().putInt("user_id", usuario.getId_usuario()).apply();
 
                         if (usuario.id_rol == 1) {
                             Intent intAdmin = new Intent(LoginActivity.this, admin.class);

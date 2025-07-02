@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +17,18 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.example.ingenia.Model.User;
+import com.example.ingenia.Model.UsuarioActualizarDTO;
 import com.example.ingenia.R;
+import com.example.ingenia.api.ApiConfig;
+import com.example.ingenia.api.UsuarioService;
+import com.google.gson.Gson;
+
+import java.io.IOException;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class PerfilAdminFragment extends Fragment {
 
@@ -38,30 +50,50 @@ public class PerfilAdminFragment extends Fragment {
         Button btnEditarPerfil = view.findViewById(R.id.btnEditarPerfil);
         Button btnCerrarSesion = view.findViewById(R.id.btnCerrarSesion);
 
-        // SharedPreferences para datos persistentes
-        SharedPreferences prefs = requireActivity().getSharedPreferences("perfil_admin", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
+        // Obtener ID del usuario desde SharedPreferences
+        SharedPreferences prefs = requireActivity().getSharedPreferences("credigo_session", Context.MODE_PRIVATE);
+        int userId = prefs.getInt("user_id", -1);
 
-        // Datos simulados por defecto
-        String nombre = prefs.getString("nombre", "");
-        String apellidoPaterno = prefs.getString("apellidoPaterno", "");
-        String apellidoMaterno = prefs.getString("apellidoMaterno", "");
-        String username = prefs.getString("username", "admin123");
-        String correo = prefs.getString("correo", "oscarj@example.com");
-        int idRol = prefs.getInt("rol", 1); // 1 = Admin
-        boolean activo = prefs.getBoolean("activo", true);
+        if (userId != -1) {
+            UsuarioService apiService = ApiConfig.getRetrofit().create(UsuarioService.class);
+            Call<User> call = apiService.ObtenerUsuario(userId);
 
-        // Preparar texto para mostrar
-        String nombreCompleto = nombre + " " + apellidoPaterno + " " + apellidoMaterno;
-        String rolTexto = (idRol == 1) ? "Administrador" : "Otro rol";
-        String estadoTexto = activo ? "Activo" : "Inactivo";
+            call.enqueue(new Callback<User>() {
+                @Override
+                public void onResponse(Call<User> call, Response<User> response) {
+                    Log.d("PerfilFragment", "Código HTTP: " + response.code());
 
-        // Mostrar en pantalla
-        tvNombreCompleto.setText(nombreCompleto);
-        tvUsername.setText("Username: " + username);
-        tvCorreo.setText("Correo: " + correo);
-        tvRol.setText("Rol: " + rolTexto);
-        tvEstado.setText("Estado: " + estadoTexto);
+                    if (response.isSuccessful() && response.body() != null) {
+                        User user = response.body();
+                        Log.d("PerfilFragment", "Usuario recibido: " + new Gson().toJson(user));
+
+                        String nombreCompleto = user.getUsername();
+                        String rolTexto = user.getId_rol() == 1 ? "Administrador" : "Trabajador";
+                        String estadoTexto = user.isActivo() ? "Activo" : "Inactivo";
+
+                        tvNombreCompleto.setText(nombreCompleto);
+                        tvUsername.setText("Username: " + user.getUsername());
+                        tvCorreo.setText("Correo: " + user.getCorreo());
+                        tvRol.setText("Rol: " + rolTexto);
+                        tvEstado.setText("Estado: " + estadoTexto);
+                    } else {
+                        try {
+                            Log.e("PerfilFragment", "Error Body: " + response.errorBody().string());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        Toast.makeText(getContext(), "Error al cargar perfil", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<User> call, Throwable t) {
+                    Toast.makeText(getContext(), "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            Toast.makeText(getContext(), "Sesión no encontrada", Toast.LENGTH_SHORT).show();
+        }
 
         // Botón Editar Perfil
         btnEditarPerfil.setOnClickListener(v -> {
@@ -69,7 +101,7 @@ public class PerfilAdminFragment extends Fragment {
             EditText etNuevoNombre = dialogView.findViewById(R.id.etNuevoNombre);
             EditText etNuevaPassword = dialogView.findViewById(R.id.etNuevaPassword);
 
-            etNuevoNombre.setText(nombreCompleto);
+            etNuevoNombre.setText(tvNombreCompleto.getText().toString());
 
             new AlertDialog.Builder(getContext())
                     .setTitle("Editar Perfil")
@@ -78,28 +110,45 @@ public class PerfilAdminFragment extends Fragment {
                         String nuevoNombre = etNuevoNombre.getText().toString().trim();
                         String nuevaPass = etNuevaPassword.getText().toString().trim();
 
-                        if (!nuevoNombre.isEmpty()) {
-                            tvNombreCompleto.setText(nuevoNombre);
-                            editor.putString("nombre", nuevoNombre); // Guarda solo el nombre completo
-                            editor.apply();
+                        if (nuevoNombre.isEmpty() && nuevaPass.isEmpty()) {
+                            Toast.makeText(getContext(), "No hay cambios que guardar", Toast.LENGTH_SHORT).show();
+                            return;
                         }
 
-                        if (!nuevaPass.isEmpty()) {
-                            if (nuevaPass.length() < 6) {
-                                Toast.makeText(getContext(), "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show();
-                            } else {
-                                editor.putString("password", nuevaPass);
-                                editor.apply();
-                                Toast.makeText(getContext(), "Contraseña cambiada", Toast.LENGTH_SHORT).show();
+                        UsuarioActualizarDTO dto = new UsuarioActualizarDTO(
+                                !nuevoNombre.isEmpty() ? nuevoNombre : null,
+                                !nuevaPass.isEmpty() ? nuevaPass : null
+                        );
+
+                        UsuarioService apiService = ApiConfig.getRetrofit().create(UsuarioService.class);
+                        Call<User> call = apiService.actualizarUsuario(userId, dto);
+
+                        call.enqueue(new Callback<User>() {
+                            @Override
+                            public void onResponse(Call<User> call, Response<User> response) {
+                                if (response.isSuccessful()) {
+                                    User actualizado = response.body();
+                                    tvNombreCompleto.setText(actualizado.getUsername());
+                                    tvUsername.setText("Username: " + actualizado.getUsername());
+                                    Toast.makeText(getContext(), "Perfil actualizado correctamente", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(getContext(), "Error al actualizar perfil", Toast.LENGTH_SHORT).show();
+                                }
                             }
-                        }
+
+                            @Override
+                            public void onFailure(Call<User> call, Throwable t) {
+                                Toast.makeText(getContext(), "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     })
                     .setNegativeButton("Cancelar", null)
                     .show();
         });
 
+
         // Botón Cerrar Sesión
-        btnCerrarSesion.setOnClickListener(v -> {
+       btnCerrarSesion.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
@@ -108,5 +157,7 @@ public class PerfilAdminFragment extends Fragment {
 
         return view;
     }
+
+
 
 }

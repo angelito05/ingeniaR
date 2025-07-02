@@ -17,8 +17,15 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.ingenia.Model.User;
 import com.example.ingenia.R;
+import com.example.ingenia.api.ApiConfig;
+import com.example.ingenia.api.UsuarioService;
 import com.example.ingenia.databinding.FragmentPerfilUsuarioBinding;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class PerfilUsuario extends Fragment {
 
@@ -40,31 +47,45 @@ public class PerfilUsuario extends Fragment {
         Button btnEditarPerfil = view.findViewById(R.id.btnEditar);
         Button btnCerrarSesion = view.findViewById(R.id.btnCerrarS);
 
-        SharedPreferences prefs = requireActivity().getSharedPreferences("perfil_usuario", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
+        // Obtener ID del usuario desde SharedPreferences global de sesión
+        SharedPreferences prefs = requireActivity().getSharedPreferences("credigo_session", Context.MODE_PRIVATE);
+        int userId = prefs.getInt("user_id", -1);
 
-        // Recuperar SIEMPRE los datos más recientes
-        String nombre = prefs.getString("nombre", "");
-        String apellidoPaterno = prefs.getString("apellidoPaterno", "");
-        String apellidoMaterno = prefs.getString("apellidoMaterno", "");
-        String username = prefs.getString("username", "Ronald123");
-        String correo = prefs.getString("correo", "ronald@example.com");
-        int idRol = prefs.getInt("rol", 2);
-        boolean activo = prefs.getBoolean("activo", true);
+        if (userId != -1) {
+            UsuarioService apiService = ApiConfig.getRetrofit().create(UsuarioService.class);
+            Call<User> call = apiService.ObtenerUsuario(userId);
 
-        String nombreCompleto = nombre + " " + apellidoPaterno + " " + apellidoMaterno;
-        String rolTexto = (idRol == 1) ? "Administrador" : "Empleado";
-        String estadoTexto = activo ? "Activo" : "Inactivo";
+            call.enqueue(new Callback<User>() {
+                @Override
+                public void onResponse(Call<User> call, Response<User> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        User user = response.body();
 
-        // Mostrar datos
-        tvNombreCompleto.setText(nombreCompleto);
-        tvUsername.setText("Username: " + username);
-        tvCorreo.setText("Correo: " + correo);
-        tvRol.setText("Rol: " + rolTexto);
-        tvEstado.setText("Estado: " + estadoTexto);
+                        String nombreCompleto = user.getUsername(); // Modifícalo si luego agregas nombre real
+                        String rolTexto = user.getId_rol() == 1 ? "Administrador" : "Empleado";
+                        String estadoTexto = user.isActivo() ? "Activo" : "Inactivo";
+
+                        tvNombreCompleto.setText(nombreCompleto);
+                        tvUsername.setText("Username: " + user.getUsername());
+                        tvCorreo.setText("Correo: " + user.getCorreo());
+                        tvRol.setText("Rol: " + rolTexto);
+                        tvEstado.setText("Estado: " + estadoTexto);
+                    } else {
+                        Toast.makeText(getContext(), "Error al cargar perfil", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<User> call, Throwable t) {
+                    Toast.makeText(getContext(), "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            Toast.makeText(getContext(), "Sesión no encontrada", Toast.LENGTH_SHORT).show();
+        }
 
         // Acción de editar perfil
-        btnEditarPerfil.setOnClickListener(v -> {
+      /* btnEditarPerfil.setOnClickListener(v -> {
             View dialogView = getLayoutInflater().inflate(R.layout.dialog_editar_perfil, null);
             EditText etNuevoNombre = dialogView.findViewById(R.id.etNuevoNombre);
             EditText etNuevaPassword = dialogView.findViewById(R.id.etNuevaPassword);
@@ -97,7 +118,7 @@ public class PerfilUsuario extends Fragment {
                     })
                     .setNegativeButton("Cancelar", null)
                     .show();
-        });
+        });*/
 
         // Cerrar sesión y limpiar stack
         btnCerrarSesion.setOnClickListener(v -> {
@@ -109,5 +130,9 @@ public class PerfilUsuario extends Fragment {
 
         return view;
     }
+
+
+
+
 
 }

@@ -112,7 +112,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Selecciona el rol"
-                    android:textColor="@android:color/darker_gray"
+                    android:textColor="@color/text_primary"
                     android:textStyle="bold"
                     android:layout_marginTop="16dp"
                     android:labelFor="@id/spinnerRol" />
@@ -121,8 +121,8 @@
                     android:id="@+id/spinnerRol"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:background="@android:drawable/btn_dropdown" />
+                    style="@style/Widget.CrediGo.Spinner"
+                    android:layout_marginTop="4dp" />
 
                 <!-- Botón -->
                 <com.google.android.material.button.MaterialButton

@@ -38,4 +38,11 @@
         <item name="cornerRadius">12dp</item>
     </style>
 
+    <!-- Estilo para Spinner -->
+    <style name="Widget.CrediGo.Spinner" parent="Widget.AppCompat.Spinner">
+        <item name="android:background">@drawable/spinner_background</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:popupBackground">@color/card_background</item>
+    </style>
+
 </resources>

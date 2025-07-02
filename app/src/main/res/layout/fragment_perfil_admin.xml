@@ -34,7 +34,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/text_primary"
-            android:text="Username: admin123"
+            android:text="Username: "
             android:layout_marginBottom="4dp" />
 
         <TextView
