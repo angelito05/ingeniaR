@@ -45,11 +45,12 @@ public class CrearFragment extends Fragment {
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 getContext(),
-                R.layout.spinner_item, // layout personalizado para mostrar el texto
+                R.layout.spinner_item, // Para el ítem seleccionado
                 new String[]{"Administrador", "Trabajador"}
         );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item); // Para el menú desplegable
         spinnerRol.setAdapter(adapter);
+
 
 
         btnRegistrar.setOnClickListener(v -> registrarUsuario());

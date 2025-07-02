@@ -19,6 +19,7 @@
             android:id="@+id/btn_escanear_ine"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            style="@style/Widget.CrediGo.Button"
             android:text="Escanear INE 📷"
             android:layout_marginBottom="24dp" />
 
@@ -151,20 +152,25 @@
 
         <TextView
             android:id="@+id/label_ine_valida"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:text="INE: SIN VALIDAR"
             android:textColor="#888888"
             android:layout_marginBottom="16dp" />
 
         <Button
             android:id="@+id/btn_validar_datos"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.CrediGo.Button"
             android:text="Validar datos"
             android:layout_marginBottom="24dp" />
 
         <Button
             android:id="@+id/btn_crear_solicitud"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.CrediGo.Button"
             android:text="Solicitar credito"
             android:enabled="false" />
 

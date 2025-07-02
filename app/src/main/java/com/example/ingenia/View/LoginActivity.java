@@ -2,6 +2,7 @@ package com.example.ingenia.View;
 
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -31,7 +32,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class LoginActivity extends AppCompatActivity {
-    private ActivityLoginBinding binding;
+    ActivityLoginBinding binding;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -72,6 +73,7 @@ public class LoginActivity extends AppCompatActivity {
                     .client(client)
                     .build();
 
+
             UsuarioService usuarioService = retrofit.create(UsuarioService.class);
 
             usuarioService.login(loginRequest).enqueue(new Callback<User>() {
@@ -80,16 +82,9 @@ public class LoginActivity extends AppCompatActivity {
                     if (response.isSuccessful() && response.body() != null) {
                         User usuario = response.body();
 
-                        // Guardar sesión completa
-                        SharedPreferences preferences = getSharedPreferences("CrediGoPrefs", MODE_PRIVATE);
-                        SharedPreferences.Editor editor = preferences.edit();
-                        editor.putInt("id_usuario", usuario.id_usuario);
-                        editor.putString("username", usuario.username);
-                        editor.putString("correo", usuario.correo);  // <- Aquí guardas el correo
-                        editor.putInt("id_rol", usuario.id_rol);
-                        editor.apply();
+                        SharedPreferences prefs = getSharedPreferences("credigo_session", Context.MODE_PRIVATE);
+                        prefs.edit().putInt("user_id", usuario.getId_usuario()).apply();
 
-                        // Navegar según rol
                         if (usuario.id_rol == 1) {
                             Intent intAdmin = new Intent(LoginActivity.this, admin.class);
                             intAdmin.putExtra("usuario", usuario.username);
@@ -102,7 +97,6 @@ public class LoginActivity extends AppCompatActivity {
                             Toast.makeText(LoginActivity.this, "Rol no reconocido", Toast.LENGTH_SHORT).show();
                         }
 
-                        finish(); // Cerrar LoginActivity
                     } else {
                         Toast.makeText(LoginActivity.this, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show();
                         Log.e("API_ERROR", "Código: " + response.code() + ", mensaje: " + response.message());
@@ -117,8 +111,8 @@ public class LoginActivity extends AppCompatActivity {
             });
         });
 
-        // Mostrar/Ocultar contraseña con icono
         final boolean[] esVisible = {false};
+
         binding.txtContra.setOnTouchListener((v, event) -> {
             final int DRAWABLE_END = 2;
             if (event.getAction() == MotionEvent.ACTION_UP) {
