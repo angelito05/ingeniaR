@@ -104,7 +104,17 @@ public class SolicitudFinalFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     Toast.makeText(getContext(), "Solicitud creada con ID: " + response.body().id_solicitud, Toast.LENGTH_LONG).show();
 
-                    // Aquí podrías navegar a otro fragmento o limpiar campos
+                    // Ir al RendimientoFragment
+                    RendimientoFragment rendimientoFragment = new RendimientoFragment();
+                    Bundle args = new Bundle();
+                    args.putInt("id_usuario", idUsuario);
+                    rendimientoFragment.setArguments(args);
+
+                    requireActivity().getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.container_fragment, rendimientoFragment)
+                            .addToBackStack(null)
+                            .commit();
                 } else {
                     Toast.makeText(getContext(), "Error al enviar solicitud: " + response.code(), Toast.LENGTH_LONG).show();
                 }
