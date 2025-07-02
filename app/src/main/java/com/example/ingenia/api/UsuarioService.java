@@ -1,4 +1,5 @@
 package com.example.ingenia.api;
+import java.util.List;
 
 import com.example.ingenia.Model.RegisterRequest;
 import com.example.ingenia.Model.LoginRequest;
@@ -33,5 +34,13 @@ public interface UsuarioService {
 
     @POST("api/solicitud/crear")
     Call<SolicitudCredito> crearSolicitudCredito(@Body SolicitudCreditoRequest solicitud);
+
+    @GET("api/solicitud/usuario/{idUsuario}")
+    Call<List<SolicitudCredito>> obtenerSolicitudesPorUsuario(@Path("idUsuario") int idUsuario);
+
+    @GET("api/solicitud/todas")
+    Call<List<SolicitudCredito>> obtenerTodasSolicitudes();
+
+
 
 }

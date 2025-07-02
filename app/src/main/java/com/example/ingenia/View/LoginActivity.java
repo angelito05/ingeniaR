@@ -1,6 +1,5 @@
 package com.example.ingenia.View;
 
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -73,7 +72,6 @@ public class LoginActivity extends AppCompatActivity {
                     .client(client)
                     .build();
 
-
             UsuarioService usuarioService = retrofit.create(UsuarioService.class);
 
             usuarioService.login(loginRequest).enqueue(new Callback<User>() {
@@ -82,17 +80,23 @@ public class LoginActivity extends AppCompatActivity {
                     if (response.isSuccessful() && response.body() != null) {
                         User usuario = response.body();
 
-                        SharedPreferences prefs = getSharedPreferences("credigo_session", Context.MODE_PRIVATE);
-                        prefs.edit().putInt("user_id", usuario.getId_usuario()).apply();
+                        // Guardar id_usuario y username en SharedPreferences "CrediGoPrefs"
+                        SharedPreferences prefs = getSharedPreferences("CrediGoPrefs", Context.MODE_PRIVATE);
+                        prefs.edit()
+                                .putInt("id_usuario", usuario.getId_usuario())
+                                .putString("username", usuario.getUsername())
+                                .apply();
 
                         if (usuario.id_rol == 1) {
                             Intent intAdmin = new Intent(LoginActivity.this, admin.class);
-                            intAdmin.putExtra("usuario", usuario.username);
+                            intAdmin.putExtra("usuario", usuario.getUsername());
                             startActivity(intAdmin);
+                            finish();
                         } else if (usuario.id_rol == 2) {
                             Intent intTrab = new Intent(LoginActivity.this, InicioActivity.class);
-                            intTrab.putExtra("usuario", usuario.username);
+                            intTrab.putExtra("usuario", usuario.getUsername());
                             startActivity(intTrab);
+                            finish();
                         } else {
                             Toast.makeText(LoginActivity.this, "Rol no reconocido", Toast.LENGTH_SHORT).show();
                         }
