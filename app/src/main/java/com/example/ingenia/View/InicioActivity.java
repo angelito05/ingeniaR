@@ -1,16 +1,15 @@
 package com.example.ingenia.View;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.example.ingenia.R;
-import com.example.ingenia.View.CrearSolicitudFragment;
-import com.example.ingenia.View.RendimientoFragment;
-import com.example.ingenia.View.PerfilUsuario;
-
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import android.widget.TextView;
 
 public class InicioActivity extends AppCompatActivity {
 
@@ -19,12 +18,22 @@ public class InicioActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inicio);
 
+        // Obtener usuario desde SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("CrediGoPrefs", MODE_PRIVATE);
+        String nombreUsuario = prefs.getString("username", null);
+
+        // Verificar sesión activa
+        if (nombreUsuario == null) {
+            // No hay sesión, redirigir a login
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
         // Mostrar mensaje de bienvenida
         TextView bienvenidaText = findViewById(R.id.bienvenida);
-        String nombreUsuario = getIntent().getStringExtra("usuario");
-        if (nombreUsuario != null) {
-            bienvenidaText.setText("Bienvenido " + nombreUsuario);
-        }
+        bienvenidaText.setText("Bienvenido " + nombreUsuario);
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_nav);
 

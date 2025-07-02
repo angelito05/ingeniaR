@@ -8,8 +8,8 @@ import android.view.ViewGroup;
 import android.widget.*;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.example.ingenia.Model.ClienteRequest;
 import com.example.ingenia.Model.Cliente;
@@ -33,7 +33,7 @@ public class CrearSolicitudFragment extends Fragment {
     private EditText inputCurp, inputClaveElector, inputFechaNacimiento, inputGenero;
     private EditText inputColonia, inputCalle, inputCiudad, inputEstado, inputCp;
     private TextView labelCurpValida, labelIneValida;
-    private Button btnEscanear, btnValidar, btnCrear;
+    private Button btnEscanear, btnValidar, btnSolicitar;
 
     private boolean datosValidados = false;
 
@@ -58,9 +58,8 @@ public class CrearSolicitudFragment extends Fragment {
         labelIneValida = view.findViewById(R.id.label_ine_valida);
         btnEscanear = view.findViewById(R.id.btn_escanear_ine);
         btnValidar = view.findViewById(R.id.btn_validar_datos);
-        btnCrear = view.findViewById(R.id.btn_crear_solicitud);
+        btnSolicitar = view.findViewById(R.id.btn_crear_solicitud);
 
-        // 🎯 DatePicker
         inputFechaNacimiento.setOnClickListener(v -> {
             final Calendar calendar = Calendar.getInstance();
             int year = calendar.get(Calendar.YEAR);
@@ -77,9 +76,9 @@ public class CrearSolicitudFragment extends Fragment {
 
         btnEscanear.setOnClickListener(v -> simularLlenadoOCR());
         btnValidar.setOnClickListener(v -> simularValidacionDatos());
-        btnCrear.setOnClickListener(v -> crearCliente());
+        btnSolicitar.setOnClickListener(v -> crearCliente());
 
-        btnCrear.setEnabled(false);
+        btnSolicitar.setEnabled(false);
         return view;
     }
 
@@ -138,10 +137,27 @@ public class CrearSolicitudFragment extends Fragment {
             @Override
             public void onResponse(Call<Cliente> call, Response<Cliente> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    Toast.makeText(getContext(), "Cliente creado con ID: " + response.body().idCliente, Toast.LENGTH_LONG).show();
+                    int idCliente = response.body().idCliente;
+
+                    Toast.makeText(getContext(), "Cliente creado con ID: " + idCliente, Toast.LENGTH_LONG).show();
                     limpiarFormulario();
                     datosValidados = false;
-                    btnCrear.setEnabled(false);
+                    btnSolicitar.setEnabled(false);
+
+                    // Redirigir a SolicitudFinalFragment con el ID del cliente
+                    SolicitudFinalFragment solicitudFinalFragment = new SolicitudFinalFragment();
+                    Bundle args = new Bundle();
+                    args.putInt("id_cliente", idCliente);
+                    solicitudFinalFragment.setArguments(args);
+
+                    FragmentTransaction transaction = requireActivity()
+                            .getSupportFragmentManager()
+                            .beginTransaction();
+
+                    transaction.replace(R.id.container_fragment, solicitudFinalFragment);// Asegúrate de que este ID coincida con el contenedor real
+                    transaction.addToBackStack(null);
+                    transaction.commit();
+
                 } else {
                     Toast.makeText(getContext(), "Error al crear cliente: " + response.code(), Toast.LENGTH_LONG).show();
                 }
@@ -179,7 +195,7 @@ public class CrearSolicitudFragment extends Fragment {
         labelIneValida.setTextColor(requireContext().getColor(android.R.color.holo_green_dark));
 
         datosValidados = true;
-        btnCrear.setEnabled(true);
+        btnSolicitar.setEnabled(true);
 
         Toast.makeText(getContext(), "Datos validados correctamente", Toast.LENGTH_SHORT).show();
     }

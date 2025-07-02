@@ -1,6 +1,8 @@
 package com.example.ingenia.View;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,11 +16,27 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class admin extends AppCompatActivity {
 
+    private int idUsuario;
+    private String username;
+    private int idRol;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_admin);
+
+        // Leer datos de sesión guardados en SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("CrediGoPrefs", MODE_PRIVATE);
+        idUsuario = prefs.getInt("id_usuario", -1);
+        username = prefs.getString("username", null);
+        idRol = prefs.getInt("id_rol", -1);
+
+        if (idUsuario == -1 || username == null || idRol == -1) {
+            Toast.makeText(this, "Sesión no iniciada o expirada, por favor inicia sesión nuevamente", Toast.LENGTH_LONG).show();
+            finish(); // o redirige al login
+            return;
+        }
 
         // Ajuste padding para sistema Edge-to-Edge
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -27,7 +45,6 @@ public class admin extends AppCompatActivity {
             return insets;
         });
 
-        // Referencia al BottomNavigationView
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
         // Cargar fragmento inicial (SolicitudesFragment)
@@ -52,7 +69,6 @@ public class admin extends AppCompatActivity {
             }
             return false;
         });
-
     }
 
     private void loadFragment(Fragment fragment) {
