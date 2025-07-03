@@ -57,6 +57,8 @@ public class admin extends AppCompatActivity {
             int id = item.getItemId();
             if (id == R.id.nav_stats) {
                 selectedFragment = new SolicitudesFragment();
+            } else if (id == R.id.nav_empleados) {
+                selectedFragment = new Empleados_Fragment();
             } else if (id == R.id.nav_profile) {
                 selectedFragment = new PerfilAdminFragment();
             } else if (id == R.id.nav_register) {
