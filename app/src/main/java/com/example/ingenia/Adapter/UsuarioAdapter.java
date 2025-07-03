@@ -17,7 +17,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.ingenia.Model.User;
 import com.example.ingenia.R;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class UsuarioAdapter extends RecyclerView.Adapter<UsuarioAdapter.UsuarioViewHolder> {
 
@@ -57,7 +61,27 @@ public class UsuarioAdapter extends RecyclerView.Adapter<UsuarioAdapter.UsuarioV
             holder.iconoEstado.setColorFilter(color);
             // Mostrar fecha (puedes formatearla si lo deseas)
             holder.fechaCreacion.setText("Fecha de creación: " + user.getFecha_creacion());
+            try {
+                // Reemplazar punto por coma si es necesario
+                String fechaOriginal = user.getFecha_creacion().replace("T", " "); // Por si viene con T
+                SimpleDateFormat formatoEntrada = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault());
+                SimpleDateFormat formatoSalida = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
 
+                Date fecha = formatoEntrada.parse(fechaOriginal);
+                holder.fechaCreacion.setText("Fecha de creación: " + formatoSalida.format(fecha));
+
+            } catch (Exception e) {
+                // Si falla por milisegundos o algún otro error, intenta sin milisegundos
+                try {
+                    SimpleDateFormat formatoEntradaSimple = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                    SimpleDateFormat formatoSalida = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+
+                    Date fecha = formatoEntradaSimple.parse(user.getFecha_creacion());
+                    holder.fechaCreacion.setText("Fecha de creación: " + formatoSalida.format(fecha));
+                } catch (Exception ex) {
+                    holder.fechaCreacion.setText("Fecha inválida");
+                }
+            }
 
         } catch (Exception e) {
             Log.e("UsuarioAdapter", "Error en onBindViewHolder", e);
