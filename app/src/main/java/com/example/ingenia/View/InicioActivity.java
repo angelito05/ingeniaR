@@ -44,8 +44,10 @@ public class InicioActivity extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             Fragment selectedFragment = null;
             int id = item.getItemId();
-            if (id == R.id.nav_stats) {
+            if (id == R.id.solicitudes) {
                 selectedFragment = new RendimientoFragment();
+            } else if (id == R.id.clientes) {
+                selectedFragment = new Clientes();
             } else if (id == R.id.nav_profile) {
                 selectedFragment = new PerfilUsuario();
             } else if (id == R.id.nav_register) {
