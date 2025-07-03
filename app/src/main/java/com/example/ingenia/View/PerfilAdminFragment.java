@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment;
 import com.example.ingenia.Model.User;
 import com.example.ingenia.Model.UsuarioActualizarDTO;
 import com.example.ingenia.R;
+import com.example.ingenia.Util.SessionManager;
 import com.example.ingenia.api.ApiConfig;
 import com.example.ingenia.api.UsuarioService;
 import com.google.gson.Gson;
@@ -50,47 +51,21 @@ public class PerfilAdminFragment extends Fragment {
         Button btnEditarPerfil = view.findViewById(R.id.btnEditarPerfil);
         Button btnCerrarSesion = view.findViewById(R.id.btnCerrarSesion);
 
-        // Obtener ID del usuario desde SharedPreferences
-        SharedPreferences prefs = requireActivity().getSharedPreferences("credigo_session", Context.MODE_PRIVATE);
-        int userId = prefs.getInt("user_id", -1);
+        // Usar SessionManager
+        SessionManager sessionManager = new SessionManager(requireContext());
+        int userId = sessionManager.getIdUsuario();
 
         if (userId != -1) {
-            UsuarioService apiService = ApiConfig.getRetrofit().create(UsuarioService.class);
-            Call<User> call = apiService.ObtenerUsuario(userId);
+            // Mostrar datos guardados localmente
+            String nombreCompleto = sessionManager.getUsername(); // O tu método de nombre completo si lo tienes
+            String rolTexto = sessionManager.getIdRol() == 1 ? "Administrador" : "Trabajador";
+            String estadoTexto = "Activo"; // Puedes guardar esto también si quieres
 
-            call.enqueue(new Callback<User>() {
-                @Override
-                public void onResponse(Call<User> call, Response<User> response) {
-                    Log.d("PerfilFragment", "Código HTTP: " + response.code());
-
-                    if (response.isSuccessful() && response.body() != null) {
-                        User user = response.body();
-                        Log.d("PerfilFragment", "Usuario recibido: " + new Gson().toJson(user));
-
-                        String nombreCompleto = user.getUsername();
-                        String rolTexto = user.getId_rol() == 1 ? "Administrador" : "Trabajador";
-                        String estadoTexto = user.isActivo() ? "Activo" : "Inactivo";
-
-                        tvNombreCompleto.setText(nombreCompleto);
-                        tvUsername.setText("Username: " + user.getUsername());
-                        tvCorreo.setText("Correo: " + user.getCorreo());
-                        tvRol.setText("Rol: " + rolTexto);
-                        tvEstado.setText("Estado: " + estadoTexto);
-                    } else {
-                        try {
-                            Log.e("PerfilFragment", "Error Body: " + response.errorBody().string());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        Toast.makeText(getContext(), "Error al cargar perfil", Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<User> call, Throwable t) {
-                    Toast.makeText(getContext(), "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
+            tvNombreCompleto.setText(nombreCompleto);
+            tvUsername.setText("Username: " + sessionManager.getUsername());
+            tvCorreo.setText("Correo: " + sessionManager.getCorreo()); // Asegúrate de tenerlo
+            tvRol.setText("Rol: " + rolTexto);
+            tvEstado.setText("Estado: " + estadoTexto);
         } else {
             Toast.makeText(getContext(), "Sesión no encontrada", Toast.LENGTH_SHORT).show();
         }
@@ -101,7 +76,7 @@ public class PerfilAdminFragment extends Fragment {
             EditText etNuevoNombre = dialogView.findViewById(R.id.etNuevoNombre);
             EditText etNuevaPassword = dialogView.findViewById(R.id.etNuevaPassword);
 
-            etNuevoNombre.setText(tvNombreCompleto.getText().toString());
+            etNuevoNombre.setText(sessionManager.getUsername());
 
             new AlertDialog.Builder(getContext())
                     .setTitle("Editar Perfil")
@@ -126,10 +101,17 @@ public class PerfilAdminFragment extends Fragment {
                         call.enqueue(new Callback<User>() {
                             @Override
                             public void onResponse(Call<User> call, Response<User> response) {
-                                if (response.isSuccessful()) {
+                                if (response.isSuccessful() && response.body() != null) {
                                     User actualizado = response.body();
+
+                                    // Actualizar UI
                                     tvNombreCompleto.setText(actualizado.getUsername());
                                     tvUsername.setText("Username: " + actualizado.getUsername());
+                                    tvCorreo.setText("Correo: " + actualizado.getCorreo());
+
+                                    // Actualizar localmente en la sesión
+                                    sessionManager.saveSession(actualizado);
+
                                     Toast.makeText(getContext(), "Perfil actualizado correctamente", Toast.LENGTH_SHORT).show();
                                 } else {
                                     Toast.makeText(getContext(), "Error al actualizar perfil", Toast.LENGTH_SHORT).show();
@@ -146,9 +128,9 @@ public class PerfilAdminFragment extends Fragment {
                     .show();
         });
 
-
         // Botón Cerrar Sesión
-       btnCerrarSesion.setOnClickListener(v -> {
+        btnCerrarSesion.setOnClickListener(v -> {
+            sessionManager.clearSession(); // Limpia todos los datos
             Intent intent = new Intent(getActivity(), LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
@@ -157,7 +139,4 @@ public class PerfilAdminFragment extends Fragment {
 
         return view;
     }
-
-
-
 }

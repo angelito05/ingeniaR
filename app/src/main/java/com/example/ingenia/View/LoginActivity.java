@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.ingenia.Model.LoginRequest;
 import com.example.ingenia.Model.User;
 import com.example.ingenia.R;
+import com.example.ingenia.Util.SessionManager;
 import com.example.ingenia.api.ApiConfig;
 import com.example.ingenia.api.UsuarioService;
 import com.example.ingenia.databinding.ActivityLoginBinding;
@@ -72,6 +73,7 @@ public class LoginActivity extends AppCompatActivity {
                     .client(client)
                     .build();
 
+
             UsuarioService usuarioService = retrofit.create(UsuarioService.class);
 
             usuarioService.login(loginRequest).enqueue(new Callback<User>() {
@@ -81,11 +83,9 @@ public class LoginActivity extends AppCompatActivity {
                         User usuario = response.body();
 
                         // Guardar id_usuario y username en SharedPreferences "CrediGoPrefs"
-                        SharedPreferences prefs = getSharedPreferences("CrediGoPrefs", Context.MODE_PRIVATE);
-                        prefs.edit()
-                                .putInt("id_usuario", usuario.getId_usuario())
-                                .putString("username", usuario.getUsername())
-                                .apply();
+                        SessionManager sessionManager = new SessionManager(LoginActivity.this);
+                        sessionManager.saveSession(usuario);
+
 
                         if (usuario.id_rol == 1) {
                             Intent intAdmin = new Intent(LoginActivity.this, admin.class);

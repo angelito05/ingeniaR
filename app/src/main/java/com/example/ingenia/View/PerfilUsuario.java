@@ -20,6 +20,7 @@ import android.widget.Toast;
 import com.example.ingenia.Model.User;
 import com.example.ingenia.Model.UsuarioActualizarDTO;
 import com.example.ingenia.R;
+import com.example.ingenia.Util.SessionManager;
 import com.example.ingenia.api.ApiConfig;
 import com.example.ingenia.api.UsuarioService;
 import com.example.ingenia.databinding.FragmentPerfilUsuarioBinding;
@@ -29,6 +30,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class PerfilUsuario extends Fragment {
+    FragmentPerfilUsuarioBinding binding;
 
     public PerfilUsuario() {
         // Required empty public constructor
@@ -37,57 +39,30 @@ public class PerfilUsuario extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_perfil_usuario, container, false);
 
-        // Referencias a los elementos UI
-        TextView tvUsername = view.findViewById(R.id.tvUsername);
-        TextView tvCorreo = view.findViewById(R.id.tvCorreo);
-        TextView tvRol = view.findViewById(R.id.tvRol);
-        TextView tvEstado = view.findViewById(R.id.tvEstado);
-        Button btnEditarPerfil = view.findViewById(R.id.btnEditar);
-        Button btnCerrarSesion = view.findViewById(R.id.btnCerrarS);
+        binding = FragmentPerfilUsuarioBinding.inflate(inflater, container, false);
+        View view = binding.getRoot();
 
-        // Obtener ID del usuario desde SharedPreferences global de sesión
-        SharedPreferences prefs = requireActivity().getSharedPreferences("credigo_session", Context.MODE_PRIVATE);
-        int userId = prefs.getInt("user_id", -1);
+        SessionManager sessionManager = new SessionManager(requireContext());
 
-        if (userId != -1) {
-            UsuarioService apiService = ApiConfig.getRetrofit().create(UsuarioService.class);
-            Call<User> call = apiService.ObtenerUsuario(userId);
+        // Leer datos locales guardados
+        String username = sessionManager.getUsername();
+        String correo = sessionManager.getCorreo();
+        String rolTexto = sessionManager.getIdRol() == 1 ? "Administrador" : "Empleado";
+        String estadoTexto = sessionManager.isActivo() ? "Activo" : "Inactivo";
 
-            call.enqueue(new Callback<User>() {
-                @Override
-                public void onResponse(Call<User> call, Response<User> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        User user = response.body();
+        // Mostrar en pantalla
+        binding.tvUsername.setText("Username: " + username);
+        binding.tvCorreo.setText("Correo: " + correo);
+        binding.tvRol.setText("Rol: " + rolTexto);
+        binding.tvEstado.setText("Estado: " + estadoTexto);
 
-                        String nombreCompleto = user.getUsername(); // Modifícalo si luego agregas nombre real
-                        String rolTexto = user.getId_rol() == 1 ? "Administrador" : "Empleado";
-                        String estadoTexto = user.isActivo() ? "Activo" : "Inactivo";
-
-                        tvUsername.setText("Username: " + user.getUsername());
-                        tvCorreo.setText("Correo: " + user.getCorreo());
-                        tvRol.setText("Rol: " + rolTexto);
-                        tvEstado.setText("Estado: " + estadoTexto);
-                    } else {
-                        Toast.makeText(getContext(), "Error al cargar perfil", Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<User> call, Throwable t) {
-                    Toast.makeText(getContext(), "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
-        } else {
-            Toast.makeText(getContext(), "Sesión no encontrada", Toast.LENGTH_SHORT).show();
-        }
-
-        // Acción de editar perfil
-        btnEditarPerfil.setOnClickListener(v -> {
+        binding.btnEditar.setOnClickListener(v -> {
             View dialogView = getLayoutInflater().inflate(R.layout.dialog_editar_perfil, null);
             EditText etNuevoNombre = dialogView.findViewById(R.id.etNuevoNombre);
             EditText etNuevaPassword = dialogView.findViewById(R.id.etNuevaPassword);
+
+            etNuevoNombre.setText(sessionManager.getUsername()); // Muestra el username actual (puedes cambiar a nombre real)
 
             new AlertDialog.Builder(getContext())
                     .setTitle("Editar Perfil")
@@ -107,14 +82,19 @@ public class PerfilUsuario extends Fragment {
                         );
 
                         UsuarioService apiService = ApiConfig.getRetrofit().create(UsuarioService.class);
-                        Call<User> call = apiService.actualizarUsuario(userId, dto);
+                        int userId = sessionManager.getIdUsuario(); // Ya que ya tienes sessionManager
 
-                        call.enqueue(new Callback<User>() {
+                        apiService.actualizarUsuario(userId, dto).enqueue(new Callback<User>() {
                             @Override
                             public void onResponse(Call<User> call, Response<User> response) {
-                                if (response.isSuccessful()) {
+                                if (response.isSuccessful() && response.body() != null) {
                                     User actualizado = response.body();
-                                    tvUsername.setText("Username: " + actualizado.getUsername());
+
+                                    binding.tvUsername.setText("Username: " + actualizado.getUsername());
+
+                                    // Guardar los nuevos datos en la sesión
+                                    sessionManager.saveSession(actualizado);
+
                                     Toast.makeText(getContext(), "Perfil actualizado correctamente", Toast.LENGTH_SHORT).show();
                                 } else {
                                     Toast.makeText(getContext(), "Error al actualizar perfil", Toast.LENGTH_SHORT).show();
@@ -132,8 +112,10 @@ public class PerfilUsuario extends Fragment {
         });
 
 
-        // Cerrar sesión y limpiar stack
-        btnCerrarSesion.setOnClickListener(v -> {
+
+        // Botón cerrar sesión
+        binding.btnCerrarSesion.setOnClickListener(v -> {
+            sessionManager.clearSession();
             Intent intent = new Intent(getActivity(), LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
@@ -143,8 +125,51 @@ public class PerfilUsuario extends Fragment {
         return view;
     }
 
-
-
-
-
 }
+// Editar perfil
+            /*binding.btnEditar.setOnClickListener(v -> {
+                View dialogView = getLayoutInflater().inflate(R.layout.dialog_editar_perfil, null);
+                EditText etNuevoNombre = dialogView.findViewById(R.id.etNuevoNombre);
+                EditText etNuevaPassword = dialogView.findViewById(R.id.etNuevaPassword);
+
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Editar Perfil")
+                        .setView(dialogView)
+                        .setPositiveButton("Guardar", (dialog, which) -> {
+                            String nuevoNombre = etNuevoNombre.getText().toString().trim();
+                            String nuevaPass = etNuevaPassword.getText().toString().trim();
+
+                            if (nuevoNombre.isEmpty() && nuevaPass.isEmpty()) {
+                                Toast.makeText(getContext(), "No hay cambios que guardar", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+
+                            UsuarioActualizarDTO dto = new UsuarioActualizarDTO(
+                                    !nuevoNombre.isEmpty() ? nuevoNombre : null,
+                                    !nuevaPass.isEmpty() ? nuevaPass : null
+                            );
+
+                            apiService.actualizarUsuario(userId, dto).enqueue(new Callback<User>() {
+                                @Override
+                                public void onResponse(Call<User> call, Response<User> response) {
+                                    if (response.isSuccessful() && response.body() != null) {
+                                        User actualizado = response.body();
+                                        binding.tvUsername.setText("Username: " + actualizado.getUsername());
+                                        Toast.makeText(getContext(), "Perfil actualizado", Toast.LENGTH_SHORT).show();
+
+                                        // Actualizar localmente
+                                        sessionManager.saveSession(userId, actualizado.getUsername(), actualizado.getId_rol());
+                                    } else {
+                                        Toast.makeText(getContext(), "Error al actualizar", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<User> call, Throwable t) {
+                                    Toast.makeText(getContext(), "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        })
+                        .setNegativeButton("Cancelar", null)
+                        .show();
+            });*/
