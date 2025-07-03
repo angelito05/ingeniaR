@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/nav_stats"
+        android:id="@+id/solicitudes"
         android:icon="@drawable/ic_stats"
-        android:title="Rendimiento" />
+        android:title="Solicitudes" />
+    <item
+        android:id="@+id/clientes"
+        android:icon="@drawable/ic_stats"
+        android:title="Clientes" />
     <item
         android:id="@+id/nav_profile"
         android:icon="@drawable/ic_profile"
