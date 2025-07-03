@@ -1,7 +1,10 @@
 package com.example.ingenia.View;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -106,6 +109,17 @@ public class CrearSolicitudFragment extends Fragment {
             return;
         }
 
+        // Obtener id_usuario desde SharedPreferences
+        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("CrediGoPrefs", Context.MODE_PRIVATE);
+        int idUsuario = sharedPreferences.getInt("id_usuario", -1);
+
+        if (idUsuario == -1) {
+            Toast.makeText(getContext(), "Error: no se encontró el usuario logeado", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d("ID_USUARIO_LOGEADO", "ID: " + idUsuario);
+
         ClienteRequest request = new ClienteRequest(
                 nombre,
                 apellidoP,
@@ -118,7 +132,8 @@ public class CrearSolicitudFragment extends Fragment {
                 colonia,
                 ciudad,
                 estado,
-                codigoPostal
+                codigoPostal,
+                idUsuario
         );
 
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
@@ -144,7 +159,7 @@ public class CrearSolicitudFragment extends Fragment {
                     datosValidados = false;
                     btnSolicitar.setEnabled(false);
 
-                    // Redirigir a SolicitudFinalFragment con el ID del cliente
+                    // Redirigir a fragmento final con el ID del cliente
                     SolicitudFinalFragment solicitudFinalFragment = new SolicitudFinalFragment();
                     Bundle args = new Bundle();
                     args.putInt("id_cliente", idCliente);
@@ -154,10 +169,9 @@ public class CrearSolicitudFragment extends Fragment {
                             .getSupportFragmentManager()
                             .beginTransaction();
 
-                    transaction.replace(R.id.container_fragment, solicitudFinalFragment);// Asegúrate de que este ID coincida con el contenedor real
+                    transaction.replace(R.id.container_fragment, solicitudFinalFragment);
                     transaction.addToBackStack(null);
                     transaction.commit();
-
                 } else {
                     Toast.makeText(getContext(), "Error al crear cliente: " + response.code(), Toast.LENGTH_LONG).show();
                 }

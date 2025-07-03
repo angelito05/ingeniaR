@@ -1,7 +1,11 @@
 package com.example.ingenia.Model;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Cliente {
+    @SerializedName("id_cliente")
     public int idCliente;
+
     public String nombre;
     public String apellido_paterno;
     public String apellido_materno;
@@ -15,4 +19,7 @@ public class Cliente {
     public String estado;
     public String codigo_postal;
     public boolean cliente_verificado;
+    public int id_usuario;
+
+    public Cliente() {}
 }
