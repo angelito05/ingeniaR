@@ -11,6 +11,7 @@ import com.example.ingenia.Model.*;
 import com.example.ingenia.Model.UsuarioActualizarDTO;
 
 import retrofit2.Call;
+import okhttp3.ResponseBody;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
@@ -40,6 +41,10 @@ public interface UsuarioService {
 
     @GET("api/solicitud/todas")
     Call<List<SolicitudCredito>> obtenerTodasSolicitudes();
+
+    @PUT("api/solicitud/cambiar-estatus/{id}")
+    Call<ResponseBody> cambiarEstatusSolicitud(@Path("id") int idSolicitud, @Body CambiarEstatusRequest request);
+
 
 
 

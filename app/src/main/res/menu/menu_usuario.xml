@@ -12,4 +12,6 @@
         android:id="@+id/nav_register"
         android:icon="@drawable/ic_register"
         android:title="Crear solicitud" />
+
+
 </menu>

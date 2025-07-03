@@ -73,11 +73,14 @@ public class RendimientoFragment extends Fragment {
             public void onResponse(Call<List<SolicitudCredito>> call, Response<List<SolicitudCredito>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<SolicitudCredito> solicitudes = response.body();
-                    recyclerView.setAdapter(new SolicitudAdapter(solicitudes, false));
+                    recyclerView.setAdapter(new SolicitudAdapter(solicitudes, false, (id, estatus) -> {
+                        // callback vacío
+                    }));
                 } else {
                     Toast.makeText(getContext(), "No se pudieron obtener las solicitudes", Toast.LENGTH_SHORT).show();
                 }
             }
+
 
             @Override
             public void onFailure(Call<List<SolicitudCredito>> call, Throwable t) {

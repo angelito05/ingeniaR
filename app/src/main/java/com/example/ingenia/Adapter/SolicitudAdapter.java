@@ -10,15 +10,18 @@ import com.example.ingenia.Model.SolicitudCredito;
 import com.example.ingenia.R;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 
 public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.ViewHolder> {
 
     private final List<SolicitudCredito> lista;
     private final boolean esAdmin;
+    private final BiConsumer<Integer, Integer> cambiarEstatusCallback; // (idSolicitud, nuevoEstatus)
 
-    public SolicitudAdapter(List<SolicitudCredito> lista, boolean esAdmin) {
+    public SolicitudAdapter(List<SolicitudCredito> lista, boolean esAdmin, BiConsumer<Integer, Integer> callback) {
         this.lista = lista;
         this.esAdmin = esAdmin;
+        this.cambiarEstatusCallback = callback;
     }
 
     @NonNull
@@ -39,28 +42,25 @@ public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.View
                         "Motivo: " + sc.motivo
         );
 
-        // Solo mostrar botones y trabajador si es admin
+        // Mostrar trabajador y botones solo si es admin
         if (esAdmin) {
             holder.trabajador.setVisibility(View.VISIBLE);
-            holder.trabajador.setText("Registrado por: Usuario " + sc.id_usuario); // Puedes mejorar si tienes el nombre
+            holder.trabajador.setText("Registrado por: Usuario " + sc.id_usuario); // Puedes mostrar nombre real si lo incluyes en el modelo
             holder.botonesEstado.setVisibility(View.VISIBLE);
 
             holder.btnAprobar.setOnClickListener(v -> {
-                // Aquí puedes implementar lógica para actualizar estado al servidor
-                sc.id_estatus = 2;
-                notifyItemChanged(position);
+                cambiarEstatusCallback.accept(sc.id_solicitud, 2); // 2 = Aprobado
             });
 
             holder.btnRechazar.setOnClickListener(v -> {
-                sc.id_estatus = 3;
-                notifyItemChanged(position);
+                cambiarEstatusCallback.accept(sc.id_solicitud, 3); // 3 = Rechazado
             });
         } else {
             holder.trabajador.setVisibility(View.GONE);
             holder.botonesEstado.setVisibility(View.GONE);
         }
 
-        // Icono por estado
+        // Icono según estatus
         switch (sc.id_estatus) {
             case 1:
                 holder.icono.setImageResource(R.drawable.ic_pending);
@@ -76,7 +76,7 @@ public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.View
                 break;
             default:
                 holder.icono.setImageResource(R.drawable.ic_pending);
-                holder.icono.setColorFilter(0xFFAAAAAA); // gris por defecto
+                holder.icono.setColorFilter(0xFFAAAAAA); // gris
                 break;
         }
     }
