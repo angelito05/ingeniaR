@@ -3,6 +3,7 @@ package com.example.ingenia.View;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,10 +11,8 @@ import android.view.ViewGroup;
 
 import com.example.ingenia.R;
 
-public class Clientes extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+public class ClientesFragment extends Fragment {
+    private RecyclerView recyclerView;
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
@@ -21,7 +20,7 @@ public class Clientes extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    public Clientes() {
+    public ClientesFragment() {
         // Required empty public constructor
     }
 
@@ -34,8 +33,8 @@ public class Clientes extends Fragment {
      * @return A new instance of fragment Clientes.
      */
     // TODO: Rename and change types and number of parameters
-    public static Clientes newInstance(String param1, String param2) {
-        Clientes fragment = new Clientes();
+    public static ClientesFragment newInstance(String param1, String param2) {
+        ClientesFragment fragment = new ClientesFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);

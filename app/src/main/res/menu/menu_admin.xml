@@ -5,6 +5,10 @@
         android:icon="@drawable/ic_stats"
         android:title="Solicitudes" />
     <item
+        android:id="@+id/nav_empleados"
+        android:icon="@drawable/ic_stats"
+        android:title="Promotores" />
+    <item
         android:id="@+id/nav_profile"
         android:icon="@drawable/ic_profile"
         android:title="Perfil" />

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
@@ -11,46 +10,42 @@
     android:gravity="center_vertical"
     android:elevation="2dp">
 
-    <!-- Texto de la solicitud -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical">
 
-        <!-- Nombre del cliente -->
+        <!-- ESTE DEBE EXISTIR -->
         <TextView
-            android:id="@+id/nombre"
+            android:id="@+id/tvUsername"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#000000"
-            android:text="RONALD LEYVA"
+            android:text="Nombre de usuario"
             android:textStyle="bold"
             android:textSize="16sp"
-             />
-
-        <!-- Detalles -->
-        <TextView
-            android:id="@+id/detalles"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="CURP VERIFICADA\nINE VERIFICADA\nPLAZO 6-12 MESES\nMONTO: $6,000"
-            android:textSize="14sp"
             android:textColor="#000000" />
 
-        <!-- Nombre del trabajador que registró la solicitud -->
+        <!-- ESTE TAMBIÉN -->
         <TextView
-            android:id="@+id/trabajador"
+            android:id="@+id/tvDetalles"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Registrado por: Antonio Bello"
+            android:text="Correo: ejemplo@correo.com\nRol: Empleado\nEstado: Activo"
+            android:textSize="14sp"
+            android:textColor="#000000" />
+        <TextView
+            android:id="@+id/tvFechaCreacion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fecha de creación: 01/07/2025"
             android:textSize="13sp"
-            android:textColor="#555555"
+            android:textColor="#000000"
             android:layout_marginTop="4dp" />
 
-        <!-- Botones para aprobar/rechazar -->
+        <!-- BOTONES (pueden ir ocultos por ahora) -->
         <LinearLayout
-            android:id="@+id/botonesEstado"
+            android:id="@+id/accionesUsuario"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -60,25 +55,24 @@
                 android:id="@+id/btnAprobar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Aprobar"
+                android:text="Activar"
                 android:textSize="12sp" />
 
             <Button
                 android:id="@+id/btnRechazar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Rechazar"
+                android:text="Desactivar"
                 android:textSize="12sp"
                 android:layout_marginStart="8dp" />
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Icono del estado -->
+    <!-- ÍCONO DE ESTADO -->
     <ImageView
         android:id="@+id/iconoEstado"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:src="@drawable/ic_pending"
-        app:tint="#FFC107"
+        android:src="@drawable/ic_profile"
         android:contentDescription="Estado" />
 </LinearLayout>

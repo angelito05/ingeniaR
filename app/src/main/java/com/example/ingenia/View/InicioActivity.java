@@ -47,7 +47,7 @@ public class InicioActivity extends AppCompatActivity {
             if (id == R.id.solicitudes) {
                 selectedFragment = new RendimientoFragment();
             } else if (id == R.id.clientes) {
-                selectedFragment = new Clientes();
+                selectedFragment = new ClientesFragment();
             } else if (id == R.id.nav_profile) {
                 selectedFragment = new PerfilUsuario();
             } else if (id == R.id.nav_register) {

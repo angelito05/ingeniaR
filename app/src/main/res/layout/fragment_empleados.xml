@@ -3,28 +3,25 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".View.ClientesFragment">
+    tools:context=".View.Empleados_Fragment">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:gravity="center"
-            android:text="Clientes"
             android:textColor="@color/text_primary"
+            android:text="Promotores"
             android:textSize="22sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="8dp" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerClientes"
+            android:id="@+id/recyclerPromotores"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-
     </LinearLayout>
-
 </FrameLayout>
