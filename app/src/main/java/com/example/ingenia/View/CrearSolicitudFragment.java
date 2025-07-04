@@ -5,9 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.*;
 
 import androidx.annotation.NonNull;
@@ -24,10 +22,8 @@ import java.util.Calendar;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
+import retrofit2.*;
+
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class CrearSolicitudFragment extends Fragment {
@@ -39,12 +35,14 @@ public class CrearSolicitudFragment extends Fragment {
     private Button btnEscanear, btnValidar, btnSolicitar;
 
     private boolean datosValidados = false;
+    private boolean modoSoloLectura = false;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_crear_solicitud, container, false);
 
+        // Referenciar vistas
         inputNombre = view.findViewById(R.id.input_nombre);
         inputApellidoPaterno = view.findViewById(R.id.input_apellido_paterno);
         inputApellidoMaterno = view.findViewById(R.id.input_apellido_materno);
@@ -57,19 +55,104 @@ public class CrearSolicitudFragment extends Fragment {
         inputCiudad = view.findViewById(R.id.input_ciudad);
         inputEstado = view.findViewById(R.id.input_estado);
         inputCp = view.findViewById(R.id.input_cp);
+
         labelCurpValida = view.findViewById(R.id.label_curp_valida);
         labelIneValida = view.findViewById(R.id.label_ine_valida);
+
         btnEscanear = view.findViewById(R.id.btn_escanear_ine);
         btnValidar = view.findViewById(R.id.btn_validar_datos);
         btnSolicitar = view.findViewById(R.id.btn_crear_solicitud);
 
+        // Si recibimos argumentos, asumimos modo solo lectura y cargamos datos
+        Bundle args = getArguments();
+        if (args != null && args.containsKey("nombre")) {
+            modoSoloLectura = true;
+            cargarDatosModoLectura(args);
+        } else {
+            // Configuración para modo edición (crear cliente)
+            configurarModoEdicion();
+        }
+
+        return view;
+    }
+
+    private void cargarDatosModoLectura(Bundle args) {
+        inputNombre.setText(args.getString("nombre", ""));
+        inputApellidoPaterno.setText(args.getString("apellido_paterno", ""));
+        inputApellidoMaterno.setText(args.getString("apellido_materno", ""));
+        inputCurp.setText(args.getString("curp", ""));
+        inputClaveElector.setText(args.getString("clave_elector", ""));
+        inputFechaNacimiento.setText(args.getString("fecha_nacimiento", ""));
+        inputGenero.setText(args.getString("genero", ""));
+        inputColonia.setText(args.getString("colonia", ""));
+        inputCalle.setText(args.getString("calle", ""));
+        inputCiudad.setText(args.getString("ciudad", ""));
+        inputEstado.setText(args.getString("estado", ""));
+        inputCp.setText(args.getString("codigo_postal", ""));
+
+
+        // Poner campos en solo lectura (deshabilitados y fondo gris claro)
+        ponerCamposSoloLectura(
+                inputNombre, inputApellidoPaterno, inputApellidoMaterno,
+                inputCurp, inputClaveElector, inputFechaNacimiento,
+                inputGenero, inputColonia, inputCalle, inputCiudad,
+                inputEstado, inputCp
+        );
+
+        // Ocultar botones que no aplican en modo lectura
+        btnEscanear.setVisibility(View.GONE);
+        btnValidar.setVisibility(View.GONE);
+        btnSolicitar.setVisibility(View.VISIBLE);
+        btnSolicitar.setEnabled(true);
+
+// Nueva funcionalidad: ir directo a SolicitudFinalFragment con el id_cliente
+        btnSolicitar.setOnClickListener(v -> {
+            int idCliente = args.getInt("id_cliente", -1);
+            if (idCliente == -1) {
+                Toast.makeText(getContext(), "No se encontró el cliente", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            SolicitudFinalFragment solicitudFinalFragment = new SolicitudFinalFragment();
+            Bundle bundle = new Bundle();
+            bundle.putInt("id_cliente", idCliente);
+            solicitudFinalFragment.setArguments(bundle);
+
+            FragmentTransaction transaction = requireActivity()
+                    .getSupportFragmentManager()
+                    .beginTransaction();
+
+            transaction.replace(R.id.container_fragment, solicitudFinalFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
+        });
+
+
+        // Ocultar etiquetas de validación
+        labelCurpValida.setVisibility(View.GONE);
+        labelIneValida.setVisibility(View.GONE);
+    }
+
+    private void ponerCamposSoloLectura(EditText... campos) {
+        for (EditText campo : campos) {
+            campo.setEnabled(false);
+            campo.setBackgroundColor(requireContext().getColor(android.R.color.darker_gray));
+            campo.setTextColor(requireContext().getColor(android.R.color.black));
+        }
+    }
+
+    private void configurarModoEdicion() {
+        datosValidados = false;
+        btnSolicitar.setEnabled(false);
+
+        // Configurar selector de fecha
         inputFechaNacimiento.setOnClickListener(v -> {
             final Calendar calendar = Calendar.getInstance();
             int year = calendar.get(Calendar.YEAR);
             int month = calendar.get(Calendar.MONTH);
             int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-            DatePickerDialog picker = new DatePickerDialog(getContext(), (view1, y, m, d) -> {
+            DatePickerDialog picker = new DatePickerDialog(getContext(), (view, y, m, d) -> {
                 String fechaFormateada = String.format("%04d-%02d-%02d", y, m + 1, d);
                 inputFechaNacimiento.setText(fechaFormateada);
             }, year, month, day);
@@ -78,11 +161,10 @@ public class CrearSolicitudFragment extends Fragment {
         });
 
         btnEscanear.setOnClickListener(v -> simularLlenadoOCR());
-        btnValidar.setOnClickListener(v -> simularValidacionDatos());
-        btnSolicitar.setOnClickListener(v -> crearCliente());
 
-        btnSolicitar.setEnabled(false);
-        return view;
+        btnValidar.setOnClickListener(v -> simularValidacionDatos());
+
+        btnSolicitar.setOnClickListener(v -> crearCliente());
     }
 
     private void crearCliente() {

@@ -27,6 +27,7 @@ public class ClientesFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private int idUsuario;
+    private UsuarioService service;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -43,6 +44,19 @@ public class ClientesFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recyclerClientes);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        // Inicializar Retrofit y servicio aquí para reutilizar
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient client = new OkHttpClient.Builder().addInterceptor(logging).build();
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(ApiConfig.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
+                .build();
+
+        service = retrofit.create(UsuarioService.class);
+
         // Obtener ID del usuario desde SharedPreferences
         SharedPreferences prefs = requireActivity().getSharedPreferences("CrediGoPrefs", getContext().MODE_PRIVATE);
         idUsuario = prefs.getInt("id_usuario", -1);
@@ -56,24 +70,23 @@ public class ClientesFragment extends Fragment {
     }
 
     private void obtenerClientesPorUsuario() {
-        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-        OkHttpClient client = new OkHttpClient.Builder().addInterceptor(logging).build();
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(ApiConfig.BASE_URL) // Define en ApiConfig tu URL base
-                .addConverterFactory(GsonConverterFactory.create())
-                .client(client)
-                .build();
-
-        UsuarioService service = retrofit.create(UsuarioService.class);
-
         service.getClientesPorUsuario(idUsuario).enqueue(new Callback<List<Cliente>>() {
             @Override
             public void onResponse(Call<List<Cliente>> call, Response<List<Cliente>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Cliente> clientes = response.body();
-                    recyclerView.setAdapter(new ClienteAdapter(clientes));
+                    ClienteAdapter adapter = new ClienteAdapter(clientes, new ClienteAdapter.OnItemClickListener() {
+                        @Override
+                        public void onVerDetallesClicked(Cliente cliente) {
+                            Toast.makeText(getContext(), "Ver detalles (no implementado aún): " + cliente.nombre, Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onCrearSolicitudClicked(Cliente cliente) {
+                            abrirCrearSolicitud(cliente);
+                        }
+                    });
+                    recyclerView.setAdapter(adapter);
                 } else {
                     Toast.makeText(getContext(), "No se pudieron obtener los clientes", Toast.LENGTH_SHORT).show();
                 }
@@ -85,4 +98,32 @@ public class ClientesFragment extends Fragment {
             }
         });
     }
+
+    private void abrirCrearSolicitud(Cliente cliente) {
+        CrearSolicitudFragment fragment = new CrearSolicitudFragment();
+
+        Bundle args = new Bundle();
+        args.putInt("id_cliente", cliente.idCliente);
+        args.putString("nombre", cliente.nombre);
+        args.putString("apellido_paterno", cliente.apellido_paterno);
+        args.putString("apellido_materno", cliente.apellido_materno);
+        args.putString("curp", cliente.curp);
+        args.putString("clave_elector", cliente.clave_elector);
+        args.putString("fecha_nacimiento", cliente.fecha_nacimiento);
+        args.putString("genero", cliente.genero); // si existe
+        args.putString("calle", cliente.calle);   // si existe
+        args.putString("colonia", cliente.colonia); // si existe
+        args.putString("ciudad", cliente.ciudad);
+        args.putString("estado", cliente.estado);   // si existe
+        args.putString("codigo_postal", cliente.codigo_postal);           // si existe
+
+        fragment.setArguments(args);
+
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.container_fragment, fragment) // Reemplaza con tu contenedor real
+                .addToBackStack(null)
+                .commit();
+    }
+
 }

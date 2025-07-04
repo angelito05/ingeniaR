@@ -27,7 +27,7 @@
 
         <LinearLayout
             android:layout_width="275dp"
-            android:layout_height="374dp"
+            android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="18dp">
@@ -38,6 +38,7 @@
                 android:layout_height="wrap_content"
                 android:hint="Usuario"
                 android:importantForAutofill="no"
+                android:layout_marginBottom="12dp"
                 tools:ignore="HardcodedText,TextFields,TouchTargetSizeCheck" />
 
             <EditText
@@ -49,15 +50,37 @@
                 android:inputType="textPassword"
                 android:minHeight="48dp"
                 android:paddingEnd="8dp"
+                android:layout_marginBottom="20dp"
                 tools:ignore="Autofill,HardcodedText,RtlSymmetry" />
 
+            <!-- Botón con fondo verde y texto negro -->
             <Button
                 android:id="@+id/btnEntrar"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Entrar"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:backgroundTint="@color/primary_green"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Texto olvidaste contraseña -->
+            <TextView
+                android:id="@+id/tvOlvidasteContra"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:hint="Entrar"
-                android:padding="8dp"
-                tools:ignore="HardcodedText" />
+                android:minHeight="48dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:gravity="center_vertical"
+                android:text="¿Olvidaste tu contraseña?"
+                android:textColor="@color/primary_green"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true" />
+
+
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

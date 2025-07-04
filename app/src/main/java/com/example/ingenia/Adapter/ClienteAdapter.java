@@ -1,23 +1,34 @@
 package com.example.ingenia.Adapter;
 
+import android.os.Bundle;
 import android.view.*;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ingenia.Model.Cliente;
 import com.example.ingenia.R;
+import com.example.ingenia.View.CrearSolicitudFragment;
 
 import java.util.List;
 
 public class ClienteAdapter extends RecyclerView.Adapter<ClienteAdapter.ClienteViewHolder> {
 
-    private List<Cliente> listaClientes;
+    public interface OnItemClickListener {
+        void onVerDetallesClicked(Cliente cliente);
+        void onCrearSolicitudClicked(Cliente cliente);
+    }
 
-    public ClienteAdapter(List<Cliente> listaClientes) {
+    private List<Cliente> listaClientes;
+    private OnItemClickListener listener;
+
+    public ClienteAdapter(List<Cliente> listaClientes, OnItemClickListener listener) {
         this.listaClientes = listaClientes;
+        this.listener = listener;
     }
 
     @NonNull
@@ -31,7 +42,6 @@ public class ClienteAdapter extends RecyclerView.Adapter<ClienteAdapter.ClienteV
     public void onBindViewHolder(@NonNull ClienteViewHolder holder, int position) {
         Cliente cliente = listaClientes.get(position);
 
-        // Asignar datos
         String nombreCompleto = cliente.nombre + " " + cliente.apellido_paterno + " " + cliente.apellido_materno;
         holder.txtNombre.setText(nombreCompleto);
         holder.txtCiudad.setText("Ciudad: " + cliente.ciudad);
@@ -39,11 +49,16 @@ public class ClienteAdapter extends RecyclerView.Adapter<ClienteAdapter.ClienteV
         holder.txtClaveElector.setText("Clave de elector: " + cliente.clave_elector);
         holder.txtFechaNacimiento.setText("Fecha de nacimiento: " + cliente.fecha_nacimiento);
 
-        // Botón "Ver detalles"
         holder.btnVerDetalles.setOnClickListener(v -> {
-            // Aquí puedes hacer lo que quieras: mostrar un diálogo, abrir otra pantalla, etc.
-            // Ejemplo simple:
-            // Toast.makeText(v.getContext(), "Cliente: " + nombreCompleto, Toast.LENGTH_SHORT).show();
+            if (listener != null) {
+                listener.onVerDetallesClicked(cliente);
+            }
+        });
+
+        holder.btnCrearSolicitud.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onCrearSolicitudClicked(cliente);
+            }
         });
     }
 
@@ -54,7 +69,7 @@ public class ClienteAdapter extends RecyclerView.Adapter<ClienteAdapter.ClienteV
 
     public static class ClienteViewHolder extends RecyclerView.ViewHolder {
         TextView txtNombre, txtCiudad, txtCurp, txtClaveElector, txtFechaNacimiento;
-        Button btnVerDetalles;
+        Button btnVerDetalles, btnCrearSolicitud;
 
         public ClienteViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -64,6 +79,7 @@ public class ClienteAdapter extends RecyclerView.Adapter<ClienteAdapter.ClienteV
             txtClaveElector = itemView.findViewById(R.id.txtClaveElector);
             txtFechaNacimiento = itemView.findViewById(R.id.txtFechaNacimiento);
             btnVerDetalles = itemView.findViewById(R.id.btnVerDetalles);
+            btnCrearSolicitud = itemView.findViewById(R.id.btnCrearSolicitud);
         }
     }
 }

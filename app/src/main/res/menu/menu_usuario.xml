@@ -6,7 +6,7 @@
         android:title="Solicitudes" />
     <item
         android:id="@+id/clientes"
-        android:icon="@drawable/ic_stats"
+        android:icon="@drawable/clients"
         android:title="Clientes" />
     <item
         android:id="@+id/nav_profile"
@@ -14,7 +14,7 @@
         android:title="Perfil" />
     <item
         android:id="@+id/nav_register"
-        android:icon="@drawable/ic_register"
+        android:icon="@drawable/ic_crear"
         android:title="Crear solicitud" />
 
 

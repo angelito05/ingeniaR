@@ -6,7 +6,7 @@
         android:title="Solicitudes" />
     <item
         android:id="@+id/nav_empleados"
-        android:icon="@drawable/ic_stats"
+        android:icon="@drawable/clients"
         android:title="Promotores" />
     <item
         android:id="@+id/nav_profile"
