@@ -46,7 +46,8 @@ public interface UsuarioService {
     @PUT("api/solicitud/cambiar-estatus/{id}")
     Call<ResponseBody> cambiarEstatusSolicitud(@Path("id") int idSolicitud, @Body CambiarEstatusRequest request);
 
-
+    @GET("api/Cliente/usuario/{idUsuario}")
+    Call<List<Cliente>> getClientesPorUsuario(@Path("idUsuario") int idUsuario);
 
 
 }

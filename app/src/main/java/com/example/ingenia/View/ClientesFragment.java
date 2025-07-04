@@ -1,60 +1,88 @@
 package com.example.ingenia.View;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.*;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.*;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
+import com.example.ingenia.Adapter.ClienteAdapter;
+import com.example.ingenia.Model.Cliente;
 import com.example.ingenia.R;
+import com.example.ingenia.api.ApiConfig;
+import com.example.ingenia.api.UsuarioService;
+
+import java.util.List;
+
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.*;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ClientesFragment extends Fragment {
+
     private RecyclerView recyclerView;
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public ClientesFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment Clientes.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ClientesFragment newInstance(String param1, String param2) {
-        ClientesFragment fragment = new ClientesFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private int idUsuario;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_clientes, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view,
+                              @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        recyclerView = view.findViewById(R.id.recyclerClientes);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        // Obtener ID del usuario desde SharedPreferences
+        SharedPreferences prefs = requireActivity().getSharedPreferences("CrediGoPrefs", getContext().MODE_PRIVATE);
+        idUsuario = prefs.getInt("id_usuario", -1);
+
+        if (idUsuario == -1) {
+            Toast.makeText(getContext(), "Usuario no válido", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        obtenerClientesPorUsuario();
+    }
+
+    private void obtenerClientesPorUsuario() {
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        OkHttpClient client = new OkHttpClient.Builder().addInterceptor(logging).build();
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(ApiConfig.BASE_URL) // Define en ApiConfig tu URL base
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
+                .build();
+
+        UsuarioService service = retrofit.create(UsuarioService.class);
+
+        service.getClientesPorUsuario(idUsuario).enqueue(new Callback<List<Cliente>>() {
+            @Override
+            public void onResponse(Call<List<Cliente>> call, Response<List<Cliente>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Cliente> clientes = response.body();
+                    recyclerView.setAdapter(new ClienteAdapter(clientes));
+                } else {
+                    Toast.makeText(getContext(), "No se pudieron obtener los clientes", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Cliente>> call, Throwable t) {
+                Toast.makeText(getContext(), "Error de conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }
