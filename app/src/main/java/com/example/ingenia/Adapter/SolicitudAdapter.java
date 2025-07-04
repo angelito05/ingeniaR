@@ -35,7 +35,7 @@ public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.View
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         SolicitudCredito sc = lista.get(position);
 
-        holder.nombre.setText("Cliente #" + sc.id_cliente);
+        holder.nombre.setText(sc.nombreCliente);
         holder.detalles.setText(
                 "Plazo: " + sc.plazo_meses + " meses\n" +
                         "Monto: $" + sc.monto_solicitado + "\n" +
@@ -45,7 +45,7 @@ public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.View
         // Mostrar trabajador y botones solo si es admin
         if (esAdmin) {
             holder.trabajador.setVisibility(View.VISIBLE);
-            holder.trabajador.setText("Registrado por: Usuario " + sc.id_usuario); // Puedes mostrar nombre real si lo incluyes en el modelo
+            holder.trabajador.setText("Registrado por: " + sc.nombreUsuario); // Puedes mostrar nombre real si lo incluyes en el modelo
             holder.botonesEstado.setVisibility(View.VISIBLE);
 
             holder.btnAprobar.setOnClickListener(v -> {
