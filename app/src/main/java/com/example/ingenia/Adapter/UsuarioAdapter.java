@@ -7,21 +7,31 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ingenia.Model.User;
+import com.example.ingenia.Model.UsuarioActualizarDTO;
 import com.example.ingenia.R;
+import com.example.ingenia.api.ApiConfig;
+import com.example.ingenia.api.UsuarioService;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class UsuarioAdapter extends RecyclerView.Adapter<UsuarioAdapter.UsuarioViewHolder> {
 
@@ -39,15 +49,13 @@ public class UsuarioAdapter extends RecyclerView.Adapter<UsuarioAdapter.UsuarioV
         View view = LayoutInflater.from(context).inflate(R.layout.item_usuario, parent, false);
         return new UsuarioViewHolder(view);
     }
-
-    @SuppressLint("SetTextI18n")
+    @SuppressLint({"SetTextI18n", "SimpleDateFormat"})
     @Override
     public void onBindViewHolder(@NonNull UsuarioViewHolder holder, int position) {
         try {
             User user = usuarios.get(position);
 
             holder.username.setText(user.getUsername());
-
 
             String rolTexto = user.getId_rol() == 1 ? "Administrador" : "Empleado";
             String estadoTexto = user.isActivo() ? "Activo" : "Inactivo";
@@ -56,22 +64,27 @@ public class UsuarioAdapter extends RecyclerView.Adapter<UsuarioAdapter.UsuarioV
                     + "\nRol: " + rolTexto
                     + "\nEstado: " + estadoTexto);
 
-            holder.iconoEstado.setImageResource(R.drawable.ic_profile);
-            int color = user.isActivo() ? Color.parseColor("#4CAF50") : Color.parseColor("#F44336");
-            holder.iconoEstado.setColorFilter(color);
-            // Mostrar fecha (puedes formatearla si lo deseas)
-            holder.fechaCreacion.setText("Fecha de creación: " + user.getFecha_creacion());
+            // Configurar texto y acción del botón para activar/desactivar usuario
+            holder.btnCambiarEstado.setText(user.isActivo() ? "Desactivar" : "Activar");
+
+            // Guardar el ID de usuario en el botón
+            holder.btnCambiarEstado.setTag(user.getId_usuario());
+
+            // Configurar listener del botón
+            holder.btnCambiarEstado.setOnClickListener(v -> {
+                int userId = (int) v.getTag();
+                cambiarEstadoUsuario(userId, !user.isActivo());
+            });
+
+            // Manejo de fechas (código existente)
             try {
-                // Reemplazar punto por coma si es necesario
-                String fechaOriginal = user.getFecha_creacion().replace("T", " "); // Por si viene con T
+                String fechaOriginal = user.getFecha_creacion().replace("T", " ");
                 SimpleDateFormat formatoEntrada = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault());
                 SimpleDateFormat formatoSalida = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
 
                 Date fecha = formatoEntrada.parse(fechaOriginal);
                 holder.fechaCreacion.setText("Fecha de creación: " + formatoSalida.format(fecha));
-
             } catch (Exception e) {
-                // Si falla por milisegundos o algún otro error, intenta sin milisegundos
                 try {
                     SimpleDateFormat formatoEntradaSimple = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
                     SimpleDateFormat formatoSalida = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
@@ -86,7 +99,57 @@ public class UsuarioAdapter extends RecyclerView.Adapter<UsuarioAdapter.UsuarioV
         } catch (Exception e) {
             Log.e("UsuarioAdapter", "Error en onBindViewHolder", e);
         }
+
+
+
     }
+    private void cambiarEstadoUsuario(int userId, boolean nuevoEstado) {
+        // Crear DTO solo con el campo activo
+        UsuarioActualizarDTO dto = new UsuarioActualizarDTO(null, null, nuevoEstado);
+
+        UsuarioService service = ApiConfig.getRetrofit().create(UsuarioService.class);
+        Call<User> call = service.actualizarUsuario(userId, dto);
+
+        call.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    // Buscar la posición actual del usuario actualizado
+                    int updatedPosition = -1;
+                    for (int i = 0; i < usuarios.size(); i++) {
+                        if (usuarios.get(i).getId_usuario() == userId) {
+                            updatedPosition = i;
+                            break;
+                        }
+                    }
+
+                    if (updatedPosition != -1) {
+                        // Actualizar el usuario en la lista local
+                        usuarios.set(updatedPosition, response.body());
+                        notifyItemChanged(updatedPosition);
+                        Toast.makeText(context, "Estado actualizado", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(context, "Error al cambiar estado", Toast.LENGTH_SHORT).show();
+                    if (response.errorBody() != null) {
+                        try {
+                            Log.e("API_ERROR", response.errorBody().string());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Toast.makeText(context, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e("NETWORK_ERROR", "Error en cambiarEstadoUsuario", t);
+            }
+        });
+    }
+
+
 
     @Override
     public int getItemCount() {
@@ -100,6 +163,7 @@ public class UsuarioAdapter extends RecyclerView.Adapter<UsuarioAdapter.UsuarioV
 
         ImageView iconoEstado;
         LinearLayout layoutAcciones;
+        Button btnCambiarEstado;
 
         public UsuarioViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -107,8 +171,8 @@ public class UsuarioAdapter extends RecyclerView.Adapter<UsuarioAdapter.UsuarioV
             detalles = itemView.findViewById(R.id.tvDetalles);
             fechaCreacion = itemView.findViewById(R.id.tvFechaCreacion);
             iconoEstado = itemView.findViewById(R.id.iconoEstado);
+            btnCambiarEstado = itemView.findViewById(R.id.btnCambiarEstado);
             layoutAcciones = itemView.findViewById(R.id.accionesUsuario);
-
         }
     }
 }

@@ -25,7 +25,6 @@ public interface UsuarioService {
     Call<User> ObtenerUsuario(@Path("id") int id);
     @PUT("api/usuario/{id}")
     Call<User> actualizarUsuario(@Path("id") int id, @Body UsuarioActualizarDTO datosActualizados);
-
     @GET("api/usuario/todos")
     Call<List<User>> obtenerTodosLosUsuarios();
     @POST("api/usuario/register")
