@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <EditText
+        android:id="@+id/etEditarUsername"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nuevo username"
+        android:inputType="textPersonName" />
+
+    <EditText
+        android:id="@+id/etEditarPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nueva contraseña"
+        android:inputType="textPassword" />
+
+    <CheckBox
+        android:id="@+id/checkActivo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Activo" />
+
+    <Button
+        android:id="@+id/btnEliminarUsuario"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Eliminar usuario"
+        android:textColor="#FFFFFF"
+        android:background="#F44336"
+        android:layout_marginTop="16dp"/>
+</LinearLayout>

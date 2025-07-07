@@ -1,6 +1,7 @@
 package com.example.ingenia.Adapter;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.util.Log;
@@ -8,6 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -95,6 +98,9 @@ public class UsuarioAdapter extends RecyclerView.Adapter<UsuarioAdapter.UsuarioV
                     holder.fechaCreacion.setText("Fecha inválida");
                 }
             }
+            holder.itemView.setOnClickListener(v -> {
+                mostrarDialogoEditarUsuario(holder.getAdapterPosition());
+            });
 
         } catch (Exception e) {
             Log.e("UsuarioAdapter", "Error en onBindViewHolder", e);
@@ -148,6 +154,93 @@ public class UsuarioAdapter extends RecyclerView.Adapter<UsuarioAdapter.UsuarioV
             }
         });
     }
+
+    private void mostrarDialogoEditarUsuario(int position) {
+        User user = usuarios.get(position);
+
+        View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_editar_usuario, null);
+        EditText etUsername = dialogView.findViewById(R.id.etEditarUsername);
+        EditText etPassword = dialogView.findViewById(R.id.etEditarPassword);
+        CheckBox checkActivo = dialogView.findViewById(R.id.checkActivo);
+        Button btnEliminar = dialogView.findViewById(R.id.btnEliminarUsuario);
+
+        etUsername.setText(user.getUsername());
+        checkActivo.setChecked(user.isActivo());
+
+        AlertDialog dialog = new AlertDialog.Builder(context)
+                .setTitle("Editar Usuario")
+                .setView(dialogView)
+                .setPositiveButton("Guardar", null)
+                .setNegativeButton("Cancelar", null)
+                .create();
+
+        dialog.setOnShowListener(dlg -> {
+            Button btnGuardar = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            btnGuardar.setOnClickListener(v -> {
+                String nuevoUsername = etUsername.getText().toString().trim();
+                String nuevaPass = etPassword.getText().toString().trim();
+                boolean nuevoEstado = checkActivo.isChecked();
+
+                UsuarioActualizarDTO dto = new UsuarioActualizarDTO(
+                        nuevoUsername.isEmpty() ? null : nuevoUsername,
+                        nuevaPass.isEmpty() ? null : nuevaPass,
+                        nuevoEstado
+                );
+
+                UsuarioService api = ApiConfig.getRetrofit().create(UsuarioService.class);
+                api.actualizarUsuario(user.getId_usuario(), dto).enqueue(new Callback<User>() {
+                    @Override
+                    public void onResponse(Call<User> call, Response<User> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            usuarios.set(position, response.body());
+                            notifyItemChanged(position);
+                            Toast.makeText(context, "Usuario actualizado", Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                        } else {
+                            Toast.makeText(context, "Error al actualizar", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<User> call, Throwable t) {
+                        Toast.makeText(context, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            });
+
+            btnEliminar.setOnClickListener(v -> {
+                new AlertDialog.Builder(context)
+                        .setTitle("¿Eliminar usuario?")
+                        .setMessage("Esta acción no se puede deshacer. ¿Deseas continuar?")
+                        .setPositiveButton("Sí, eliminar", (d, w) -> {
+                            UsuarioService api = ApiConfig.getRetrofit().create(UsuarioService.class);
+                            api.eliminarUsuario(user.getId_usuario()).enqueue(new Callback<Void>() {
+                                @Override
+                                public void onResponse(Call<Void> call, Response<Void> response) {
+                                    if (response.isSuccessful()) {
+                                        usuarios.remove(position);
+                                        notifyItemRemoved(position);
+                                        Toast.makeText(context, "Usuario eliminado", Toast.LENGTH_SHORT).show();
+                                        dialog.dismiss();
+                                    } else {
+                                        Toast.makeText(context, "Error al eliminar usuario", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<Void> call, Throwable t) {
+                                    Toast.makeText(context, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        })
+                        .setNegativeButton("Cancelar", null)
+                        .show();
+            });
+        });
+
+        dialog.show();
+    }
+
 
 
 

@@ -13,6 +13,7 @@ import com.example.ingenia.Model.UsuarioActualizarDTO;
 import retrofit2.Call;
 import okhttp3.ResponseBody;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
@@ -29,24 +30,18 @@ public interface UsuarioService {
     Call<List<User>> obtenerTodosLosUsuarios();
     @POST("api/usuario/register")
     Call<User> register(@Body RegisterRequest request);
-
+    @DELETE("api/usuario/{id}")
+    Call<Void> eliminarUsuario(@Path("id") int id);
     @POST("api/cliente")
     Call<Cliente> crearCliente(@Body ClienteRequest request);
-
     @POST("api/solicitud/crear")
     Call<SolicitudCredito> crearSolicitudCredito(@Body SolicitudCreditoRequest solicitud);
-
     @GET("api/solicitud/usuario/{idUsuario}")
     Call<List<SolicitudCredito>> obtenerSolicitudesPorUsuario(@Path("idUsuario") int idUsuario);
-
     @GET("api/solicitud/todas")
     Call<List<SolicitudCredito>> obtenerTodasSolicitudes();
-
     @PUT("api/solicitud/cambiar-estatus/{id}")
     Call<ResponseBody> cambiarEstatusSolicitud(@Path("id") int idSolicitud, @Body CambiarEstatusRequest request);
-
     @GET("api/Cliente/usuario/{idUsuario}")
     Call<List<Cliente>> getClientesPorUsuario(@Path("idUsuario") int idUsuario);
-
-
 }

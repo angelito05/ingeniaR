@@ -125,7 +125,6 @@ public class LoginActivity extends AppCompatActivity {
             });
         });
 
-
         final boolean[] esVisible = {false};
 
         binding.txtContra.setOnTouchListener((v, event) -> {
