@@ -23,6 +23,8 @@ import com.example.ingenia.api.ApiConfig;
 import com.example.ingenia.api.UsuarioService;
 import com.example.ingenia.databinding.ActivityLoginBinding;
 
+import java.io.IOException;
+
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
@@ -73,7 +75,6 @@ public class LoginActivity extends AppCompatActivity {
                     .client(client)
                     .build();
 
-
             UsuarioService usuarioService = retrofit.create(UsuarioService.class);
 
             usuarioService.login(loginRequest).enqueue(new Callback<User>() {
@@ -85,7 +86,6 @@ public class LoginActivity extends AppCompatActivity {
                         // Guardar id_usuario y username en SharedPreferences "CrediGoPrefs"
                         SessionManager sessionManager = new SessionManager(LoginActivity.this);
                         sessionManager.saveSession(usuario);
-
 
                         if (usuario.id_rol == 1) {
                             Intent intAdmin = new Intent(LoginActivity.this, admin.class);
@@ -102,8 +102,18 @@ public class LoginActivity extends AppCompatActivity {
                         }
 
                     } else {
-                        Toast.makeText(LoginActivity.this, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show();
-                        Log.e("API_ERROR", "Código: " + response.code() + ", mensaje: " + response.message());
+                        try {
+                            if (response.errorBody() != null) {
+                                String errorMsg = response.errorBody().string();
+                                Toast.makeText(LoginActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
+                                Log.e("API_ERROR", "Mensaje del servidor: " + errorMsg);
+                            } else {
+                                Toast.makeText(LoginActivity.this, "Usuario o contraseña incorrectos", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (IOException e) {
+                            Toast.makeText(LoginActivity.this, "Error al leer el mensaje del servidor", Toast.LENGTH_SHORT).show();
+                            Log.e("API_ERROR", "Excepción: ", e);
+                        }
                     }
                 }
 
@@ -114,6 +124,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
             });
         });
+
 
         final boolean[] esVisible = {false};
 
