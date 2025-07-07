@@ -25,7 +25,7 @@ public class User {
 
     @SerializedName("activo")
     @Expose
-    public boolean activo;
+    public Boolean activo;
 
     @SerializedName("fecha_creacion")
     public String fecha_creacion;
@@ -36,6 +36,6 @@ public class User {
     public String getCorreo() { return correo; }
     public String getContraseña() { return contrasena; }
     public int getId_rol() { return id_rol; }
-    public boolean isActivo() { return activo; }
+    public Boolean isActivo() { return activo; }
     public String getFecha_creacion() { return fecha_creacion; }
 }

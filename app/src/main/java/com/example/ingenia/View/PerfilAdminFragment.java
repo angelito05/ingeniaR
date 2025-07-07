@@ -128,6 +128,7 @@ public class PerfilAdminFragment extends Fragment {
                     .show();
         });
 
+
         // Botón Cerrar Sesión
         btnCerrarSesion.setOnClickListener(v -> {
             sessionManager.clearSession(); // Limpia todos los datos

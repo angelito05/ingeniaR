@@ -60,23 +60,13 @@
                 android:layout_marginTop="8dp">
 
                 <Button
-                    android:id="@+id/btnAprobar"
+                    android:id="@+id/btnCambiarEstado"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Activar"
                     android:textSize="12sp"
                     android:textColor="@android:color/white"
                     android:backgroundTint="@color/primary_green" />
-
-                <Button
-                    android:id="@+id/btnRechazar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Desactivar"
-                    android:textSize="12sp"
-                    android:textColor="@android:color/white"
-                    android:backgroundTint="@color/purple_500"
-                    android:layout_marginStart="8dp" />
             </LinearLayout>
 
         </LinearLayout>
