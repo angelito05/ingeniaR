@@ -37,6 +37,7 @@ android {
 dependencies {
 
     implementation(libs.okhttp.logging)
+    implementation(libs.mpandroidchart)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.appcompat)
