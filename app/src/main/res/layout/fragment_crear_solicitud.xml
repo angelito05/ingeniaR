@@ -14,7 +14,6 @@
             android:textSize="24sp"
             android:textStyle="bold"
             android:layout_marginBottom="24dp" />
-
         <Button
             android:id="@+id/btn_escanear_ine"
             android:layout_width="wrap_content"
@@ -22,10 +21,15 @@
             style="@style/Widget.CrediGo.Button"
             android:text="Escanear INE 📷"
             android:layout_marginBottom="24dp" />
+
         <ImageView
             android:id="@+id/imagen_ine"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_width="200dp"
+            android:layout_height="120dp"
+            android:layout_marginTop="8dp"
+            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            android:contentDescription="Vista previa de INE" />
 
         <EditText
             android:id="@+id/input_nombre"
