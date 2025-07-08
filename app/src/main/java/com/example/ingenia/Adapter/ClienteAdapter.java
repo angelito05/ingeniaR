@@ -1,18 +1,14 @@
 package com.example.ingenia.Adapter;
 
-import android.os.Bundle;
 import android.view.*;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ingenia.Model.Cliente;
 import com.example.ingenia.R;
-import com.example.ingenia.View.CrearSolicitudFragment;
 
 import java.util.List;
 
