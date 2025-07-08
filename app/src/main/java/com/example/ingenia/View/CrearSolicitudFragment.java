@@ -1,14 +1,27 @@
 package com.example.ingenia.View;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.*;
 import android.widget.*;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -18,7 +31,12 @@ import com.example.ingenia.R;
 import com.example.ingenia.api.ApiConfig;
 import com.example.ingenia.api.UsuarioService;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -33,9 +51,14 @@ public class CrearSolicitudFragment extends Fragment {
     private EditText inputColonia, inputCalle, inputCiudad, inputEstado, inputCp;
     private TextView labelCurpValida, labelIneValida;
     private Button btnEscanear, btnValidar, btnSolicitar;
-
+    private static final int REQUEST_CAMERA_PERMISSION = 100;
+    private ImageView imagenPreviewINE;
+    private Uri photoUri;
+    private File photoFile;
     private boolean datosValidados = false;
     private boolean modoSoloLectura = false;
+    private ActivityResultLauncher<Intent> cameraLauncher;
+    private ActivityResultLauncher<String> permissionLauncher;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -62,6 +85,11 @@ public class CrearSolicitudFragment extends Fragment {
         btnEscanear = view.findViewById(R.id.btn_escanear_ine);
         btnValidar = view.findViewById(R.id.btn_validar_datos);
         btnSolicitar = view.findViewById(R.id.btn_crear_solicitud);
+
+        btnEscanear = view.findViewById(R.id.btn_escanear_ine);
+        imagenPreviewINE = view.findViewById(R.id.imagen_ine); // <-- Debes tener un ImageView en tu layout
+
+        btnEscanear.setOnClickListener(v -> abrirCamara());
 
         // Si recibimos argumentos, asumimos modo solo lectura y cargamos datos
         Bundle args = getArguments();
@@ -159,8 +187,29 @@ public class CrearSolicitudFragment extends Fragment {
 
             picker.show();
         });
+        // Registrar launcher moderno
+        cameraLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && photoUri != null) {
+                        imagenPreviewINE.setImageURI(photoUri);
+                        Toast.makeText(getContext(), "Imagen capturada", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+        // Lanzador para solicitar permisos
+        permissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        lanzarIntentCamara();
+                    } else {
+                        Toast.makeText(getContext(), "Permiso de cámara denegado", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
 
-        btnEscanear.setOnClickListener(v -> simularLlenadoOCR());
+        btnEscanear.setOnClickListener(v -> abrirCamara());
 
         btnValidar.setOnClickListener(v -> simularValidacionDatos());
 
@@ -265,8 +314,43 @@ public class CrearSolicitudFragment extends Fragment {
             }
         });
     }
+    private void abrirCamara() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+        } else {
+            lanzarIntentCamara();
+        }
+    }
 
-    private void simularLlenadoOCR() {
+    private void lanzarIntentCamara() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
+            try {
+                photoFile = crearArchivoImagen();
+                if (photoFile != null) {
+                    photoUri = FileProvider.getUriForFile(
+                            requireContext(),
+                            requireContext().getPackageName() + ".fileprovider",
+                            photoFile
+                    );
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                    cameraLauncher.launch(takePictureIntent);  // Usamos el launcher moderno
+                }
+            } catch (IOException ex) {
+                Toast.makeText(getContext(), "Error al crear archivo", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private File crearArchivoImagen() throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        String imageFileName = "INE_" + timeStamp;
+        File storageDir = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        return File.createTempFile(imageFileName, ".jpg", storageDir);
+    }
+
+    /*private void simularLlenadoOCR() {
         inputNombre.setText("Karen");
         inputApellidoPaterno.setText("Bello");
         inputApellidoMaterno.setText("Ramírez");
@@ -281,7 +365,7 @@ public class CrearSolicitudFragment extends Fragment {
         inputCp.setText("06000");
 
         Toast.makeText(getContext(), "Datos escaneados (simulado)", Toast.LENGTH_SHORT).show();
-    }
+    }*/
 
     private void simularValidacionDatos() {
         labelCurpValida.setText("CURP: VÁLIDA");
