@@ -44,4 +44,13 @@ public interface UsuarioService {
     Call<ResponseBody> cambiarEstatusSolicitud(@Path("id") int idSolicitud, @Body CambiarEstatusRequest request);
     @GET("api/Cliente/usuario/{idUsuario}")
     Call<List<Cliente>> getClientesPorUsuario(@Path("idUsuario") int idUsuario);
+    @GET("api/Cliente/{id}")
+    Call<Cliente> getClientePorId(@Path("id") int idCliente);
+    @PUT("api/Cliente/{id}")
+    Call<Void> actualizarCliente(@Path("id") int idCliente, @Body Cliente cliente);
+
+    @DELETE("api/Cliente/{id}")
+    Call<Void> eliminarCliente(@Path("id") int idCliente);
+
+
 }

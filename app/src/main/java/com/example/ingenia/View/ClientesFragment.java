@@ -44,7 +44,7 @@ public class ClientesFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recyclerClientes);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Inicializar Retrofit y servicio aquí para reutilizar
+        // Inicializar Retrofit y servicio
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient client = new OkHttpClient.Builder().addInterceptor(logging).build();
@@ -75,10 +75,21 @@ public class ClientesFragment extends Fragment {
             public void onResponse(Call<List<Cliente>> call, Response<List<Cliente>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Cliente> clientes = response.body();
+
                     ClienteAdapter adapter = new ClienteAdapter(clientes, new ClienteAdapter.OnItemClickListener() {
                         @Override
                         public void onVerDetallesClicked(Cliente cliente) {
-                            Toast.makeText(getContext(), "Ver detalles (no implementado aún): " + cliente.nombre, Toast.LENGTH_SHORT).show();
+                            DetalleClienteFragment fragment = new DetalleClienteFragment();
+
+                            Bundle args = new Bundle();
+                            args.putInt("id_cliente", cliente.idCliente);
+                            fragment.setArguments(args);
+
+                            requireActivity().getSupportFragmentManager()
+                                    .beginTransaction()
+                                    .replace(R.id.container_fragment, fragment) // Asegúrate que este sea el ID correcto del contenedor en tu activity_main.xml
+                                    .addToBackStack(null)
+                                    .commit();
                         }
 
                         @Override
@@ -86,6 +97,7 @@ public class ClientesFragment extends Fragment {
                             abrirCrearSolicitud(cliente);
                         }
                     });
+
                     recyclerView.setAdapter(adapter);
                 } else {
                     Toast.makeText(getContext(), "No se pudieron obtener los clientes", Toast.LENGTH_SHORT).show();
@@ -110,20 +122,19 @@ public class ClientesFragment extends Fragment {
         args.putString("curp", cliente.curp);
         args.putString("clave_elector", cliente.clave_elector);
         args.putString("fecha_nacimiento", cliente.fecha_nacimiento);
-        args.putString("genero", cliente.genero); // si existe
-        args.putString("calle", cliente.calle);   // si existe
-        args.putString("colonia", cliente.colonia); // si existe
+        args.putString("genero", cliente.genero);
+        args.putString("calle", cliente.calle);
+        args.putString("colonia", cliente.colonia);
         args.putString("ciudad", cliente.ciudad);
-        args.putString("estado", cliente.estado);   // si existe
-        args.putString("codigo_postal", cliente.codigo_postal);           // si existe
+        args.putString("estado", cliente.estado);
+        args.putString("codigo_postal", cliente.codigo_postal);
 
         fragment.setArguments(args);
 
         requireActivity().getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.container_fragment, fragment) // Reemplaza con tu contenedor real
+                .replace(R.id.container_fragment, fragment)
                 .addToBackStack(null)
                 .commit();
     }
-
 }
