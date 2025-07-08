@@ -43,7 +43,6 @@ public class SolicitudesFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Inicializar vistas
         recyclerView = view.findViewById(R.id.recyclerSolicitudes);
         total = view.findViewById(R.id.contadorTotal);
         aprobadas = view.findViewById(R.id.contadorAprobadas);
@@ -55,7 +54,6 @@ public class SolicitudesFragment extends Fragment {
         cargarSolicitudes();
     }
 
-    // Configurar Retrofit una sola vez
     private void configurarRetrofit() {
         if (service != null) return;
 
@@ -75,7 +73,6 @@ public class SolicitudesFragment extends Fragment {
         service = retrofit.create(UsuarioService.class);
     }
 
-    // Cargar todas las solicitudes para el admin
     private void cargarSolicitudes() {
         service.obtenerTodasSolicitudes().enqueue(new Callback<List<SolicitudCredito>>() {
             @Override
@@ -95,8 +92,16 @@ public class SolicitudesFragment extends Fragment {
                     aprobadas.setText("Aprobadas: " + aprobadasCount);
                     rechazadas.setText("Rechazadas: " + rechazadasCount);
 
-                    // Asignar adapter con callback para cambiar estatus
-                    recyclerView.setAdapter(new SolicitudAdapter(solicitudes, true, SolicitudesFragment.this::cambiarEstatus));
+                    // Pasar callbacks para cambiar estatus y eliminar
+                    SolicitudAdapter adapter = new SolicitudAdapter(
+                            solicitudes,
+                            true,
+                            (idSolicitud, nuevoEstatus) -> cambiarEstatus(idSolicitud, nuevoEstatus),
+                            idSolicitud -> eliminarSolicitud(idSolicitud)
+                    );
+
+                    recyclerView.setAdapter(adapter);
+
                 } else {
                     Toast.makeText(getContext(), "Error al obtener solicitudes", Toast.LENGTH_SHORT).show();
                 }
@@ -110,7 +115,6 @@ public class SolicitudesFragment extends Fragment {
         });
     }
 
-    // Cambiar el estatus de una solicitud (llamado desde el Adapter)
     private void cambiarEstatus(int idSolicitud, int nuevoEstatus) {
         CambiarEstatusRequest request = new CambiarEstatusRequest(nuevoEstatus);
 
@@ -121,9 +125,31 @@ public class SolicitudesFragment extends Fragment {
 
                 if (response.isSuccessful()) {
                     Toast.makeText(getContext(), "Estatus actualizado correctamente", Toast.LENGTH_SHORT).show();
-                    cargarSolicitudes(); // Refrescar datos
+                    cargarSolicitudes();
                 } else {
                     Toast.makeText(getContext(), "Error al actualizar estatus", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                if (!isAdded()) return;
+                Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void eliminarSolicitud(int idSolicitud) {
+        service.eliminarSolicitud(idSolicitud).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (!isAdded()) return;
+
+                if (response.isSuccessful()) {
+                    Toast.makeText(getContext(), "Solicitud eliminada correctamente", Toast.LENGTH_SHORT).show();
+                    cargarSolicitudes();
+                } else {
+                    Toast.makeText(getContext(), "Error al eliminar solicitud", Toast.LENGTH_SHORT).show();
                 }
             }
 

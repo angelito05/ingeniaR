@@ -1,7 +1,6 @@
 package com.example.ingenia.View;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Context;
@@ -12,14 +11,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.*;
 import android.widget.*;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
@@ -41,7 +38,6 @@ import java.util.Locale;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.*;
-
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class CrearSolicitudFragment extends Fragment {
@@ -56,7 +52,7 @@ public class CrearSolicitudFragment extends Fragment {
     private Uri photoUri;
     private File photoFile;
     private boolean datosValidados = false;
-    private boolean modoSoloLectura = false;
+
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<String> permissionLauncher;
 
@@ -86,94 +82,20 @@ public class CrearSolicitudFragment extends Fragment {
         btnValidar = view.findViewById(R.id.btn_validar_datos);
         btnSolicitar = view.findViewById(R.id.btn_crear_solicitud);
 
-        btnEscanear = view.findViewById(R.id.btn_escanear_ine);
-        imagenPreviewINE = view.findViewById(R.id.imagen_ine); // <-- Debes tener un ImageView en tu layout
+        imagenPreviewINE = view.findViewById(R.id.imagen_ine);
 
         btnEscanear.setOnClickListener(v -> abrirCamara());
 
-        // Si recibimos argumentos, asumimos modo solo lectura y cargamos datos
-        Bundle args = getArguments();
-        if (args != null && args.containsKey("nombre")) {
-            modoSoloLectura = true;
-            cargarDatosModoLectura(args);
-        } else {
-            // Configuración para modo edición (crear cliente)
-            configurarModoEdicion();
-        }
+        configurarModoEdicion();
 
         return view;
-    }
-
-    private void cargarDatosModoLectura(Bundle args) {
-        inputNombre.setText(args.getString("nombre", ""));
-        inputApellidoPaterno.setText(args.getString("apellido_paterno", ""));
-        inputApellidoMaterno.setText(args.getString("apellido_materno", ""));
-        inputCurp.setText(args.getString("curp", ""));
-        inputClaveElector.setText(args.getString("clave_elector", ""));
-        inputFechaNacimiento.setText(args.getString("fecha_nacimiento", ""));
-        inputGenero.setText(args.getString("genero", ""));
-        inputColonia.setText(args.getString("colonia", ""));
-        inputCalle.setText(args.getString("calle", ""));
-        inputCiudad.setText(args.getString("ciudad", ""));
-        inputEstado.setText(args.getString("estado", ""));
-        inputCp.setText(args.getString("codigo_postal", ""));
-
-
-        // Poner campos en solo lectura (deshabilitados y fondo gris claro)
-        ponerCamposSoloLectura(
-                inputNombre, inputApellidoPaterno, inputApellidoMaterno,
-                inputCurp, inputClaveElector, inputFechaNacimiento,
-                inputGenero, inputColonia, inputCalle, inputCiudad,
-                inputEstado, inputCp
-        );
-
-        // Ocultar botones que no aplican en modo lectura
-        btnEscanear.setVisibility(View.GONE);
-        btnValidar.setVisibility(View.GONE);
-        btnSolicitar.setVisibility(View.VISIBLE);
-        btnSolicitar.setEnabled(true);
-
-// Nueva funcionalidad: ir directo a SolicitudFinalFragment con el id_cliente
-        btnSolicitar.setOnClickListener(v -> {
-            int idCliente = args.getInt("id_cliente", -1);
-            if (idCliente == -1) {
-                Toast.makeText(getContext(), "No se encontró el cliente", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            SolicitudFinalFragment solicitudFinalFragment = new SolicitudFinalFragment();
-            Bundle bundle = new Bundle();
-            bundle.putInt("id_cliente", idCliente);
-            solicitudFinalFragment.setArguments(bundle);
-
-            FragmentTransaction transaction = requireActivity()
-                    .getSupportFragmentManager()
-                    .beginTransaction();
-
-            transaction.replace(R.id.container_fragment, solicitudFinalFragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
-        });
-
-
-        // Ocultar etiquetas de validación
-        labelCurpValida.setVisibility(View.GONE);
-        labelIneValida.setVisibility(View.GONE);
-    }
-
-    private void ponerCamposSoloLectura(EditText... campos) {
-        for (EditText campo : campos) {
-            campo.setEnabled(false);
-            campo.setBackgroundColor(requireContext().getColor(android.R.color.darker_gray));
-            campo.setTextColor(requireContext().getColor(android.R.color.black));
-        }
     }
 
     private void configurarModoEdicion() {
         datosValidados = false;
         btnSolicitar.setEnabled(false);
 
-        // Configurar selector de fecha
+        // Selector de fecha para fecha nacimiento
         inputFechaNacimiento.setOnClickListener(v -> {
             final Calendar calendar = Calendar.getInstance();
             int year = calendar.get(Calendar.YEAR);
@@ -187,7 +109,8 @@ public class CrearSolicitudFragment extends Fragment {
 
             picker.show();
         });
-        // Registrar launcher moderno
+
+        // Registrar launcher para la cámara
         cameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -197,7 +120,8 @@ public class CrearSolicitudFragment extends Fragment {
                     }
                 }
         );
-        // Lanzador para solicitar permisos
+
+        // Lanzador para pedir permisos
         permissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 isGranted -> {
@@ -210,9 +134,7 @@ public class CrearSolicitudFragment extends Fragment {
         );
 
         btnEscanear.setOnClickListener(v -> abrirCamara());
-
         btnValidar.setOnClickListener(v -> simularValidacionDatos());
-
         btnSolicitar.setOnClickListener(v -> crearCliente());
     }
 
@@ -240,7 +162,6 @@ public class CrearSolicitudFragment extends Fragment {
             return;
         }
 
-        // Obtener id_usuario desde SharedPreferences
         SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("CrediGoPrefs", Context.MODE_PRIVATE);
         int idUsuario = sharedPreferences.getInt("id_usuario", -1);
 
@@ -248,8 +169,6 @@ public class CrearSolicitudFragment extends Fragment {
             Toast.makeText(getContext(), "Error: no se encontró el usuario logeado", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        Log.d("ID_USUARIO_LOGEADO", "ID: " + idUsuario);
 
         ClienteRequest request = new ClienteRequest(
                 nombre,
@@ -290,7 +209,7 @@ public class CrearSolicitudFragment extends Fragment {
                     datosValidados = false;
                     btnSolicitar.setEnabled(false);
 
-                    // Redirigir a fragmento final con el ID del cliente
+                    // Navegar a SolicitudFinalFragment con id_cliente
                     SolicitudFinalFragment solicitudFinalFragment = new SolicitudFinalFragment();
                     Bundle args = new Bundle();
                     args.putInt("id_cliente", idCliente);
@@ -314,10 +233,11 @@ public class CrearSolicitudFragment extends Fragment {
             }
         });
     }
+
     private void abrirCamara() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+            permissionLauncher.launch(Manifest.permission.CAMERA);
         } else {
             lanzarIntentCamara();
         }
@@ -335,7 +255,7 @@ public class CrearSolicitudFragment extends Fragment {
                             photoFile
                     );
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-                    cameraLauncher.launch(takePictureIntent);  // Usamos el launcher moderno
+                    cameraLauncher.launch(takePictureIntent);
                 }
             } catch (IOException ex) {
                 Toast.makeText(getContext(), "Error al crear archivo", Toast.LENGTH_SHORT).show();
@@ -349,23 +269,6 @@ public class CrearSolicitudFragment extends Fragment {
         File storageDir = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         return File.createTempFile(imageFileName, ".jpg", storageDir);
     }
-
-    /*private void simularLlenadoOCR() {
-        inputNombre.setText("Karen");
-        inputApellidoPaterno.setText("Bello");
-        inputApellidoMaterno.setText("Ramírez");
-        inputCurp.setText("BERA920101HDFLRS05");
-        inputClaveElector.setText("BELR920101");
-        inputFechaNacimiento.setText("1992-01-01");
-        inputGenero.setText("Femenino");
-        inputColonia.setText("Norte");
-        inputCalle.setText("Av. Insurgentes");
-        inputCiudad.setText("CDMX");
-        inputEstado.setText("Ciudad de México");
-        inputCp.setText("06000");
-
-        Toast.makeText(getContext(), "Datos escaneados (simulado)", Toast.LENGTH_SHORT).show();
-    }*/
 
     private void simularValidacionDatos() {
         labelCurpValida.setText("CURP: VÁLIDA");

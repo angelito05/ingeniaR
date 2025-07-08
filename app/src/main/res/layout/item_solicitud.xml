@@ -74,6 +74,19 @@
                     android:textColor="@android:color/white"
                     android:backgroundTint="@color/purple_500"
                     android:layout_marginStart="8dp" />
+
+                <ImageButton
+                    android:id="@+id/btnEliminar"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:contentDescription="Eliminar solicitud"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_basura"
+                    app:tint="@color/danger"
+                    android:layout_marginStart="8dp"
+                    android:scaleType="centerInside" />
+
+
             </LinearLayout>
         </LinearLayout>
 
