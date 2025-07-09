@@ -97,8 +97,10 @@ public class SolicitudesFragment extends Fragment {
                             solicitudes,
                             true,
                             (idSolicitud, nuevoEstatus) -> cambiarEstatus(idSolicitud, nuevoEstatus),
-                            idSolicitud -> eliminarSolicitud(idSolicitud)
+                            idSolicitud -> eliminarSolicitud(idSolicitud),
+                            solicitud -> { /* no hace nada al click */ }
                     );
+
 
                     recyclerView.setAdapter(adapter);
 
