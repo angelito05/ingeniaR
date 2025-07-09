@@ -22,14 +22,50 @@
             android:text="Escanear INE 📷"
             android:layout_marginBottom="24dp" />
 
+        <RelativeLayout
+            android:id="@+id/camera_container"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:visibility="gone">
+
+            <!-- Vista previa de la cámara -->
+            <androidx.camera.view.PreviewView
+                android:id="@+id/camera_preview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+            <!-- Marco de la INE -->
+            <ImageView
+                android:id="@+id/ine_frame"
+                android:layout_width="300dp"
+                android:layout_height="190dp"
+                android:src="@drawable/ine_frame"
+                android:layout_centerInParent="true"
+                android:scaleType="fitXY"
+                android:background="#26FFFFFF"/>
+        </RelativeLayout>
+
+        <Button
+            android:id="@+id/btn_capture"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tomar Foto"
+            android:visibility="gone"
+            android:layout_below="@id/camera_container"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/purple_500"
+            android:textColor="@color/text_primary"/>
+
         <ImageView
             android:id="@+id/imagen_ine"
-            android:layout_width="200dp"
-            android:layout_height="120dp"
-            android:layout_marginTop="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
             android:scaleType="centerCrop"
-            android:adjustViewBounds="true"
-            android:contentDescription="Vista previa de INE" />
+            android:contentDescription="Foto de INE"
+            android:layout_below="@id/btn_escanear_ine"
+            android:layout_marginTop="16dp"/>
+
 
         <EditText
             android:id="@+id/input_nombre"
@@ -179,6 +215,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/Widget.CrediGo.Button"
+
             android:text="Solicitar credito"
             android:enabled="false" />
 

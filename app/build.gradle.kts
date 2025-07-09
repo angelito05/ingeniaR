@@ -44,6 +44,10 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation(libs.camera.core)
+    implementation(libs.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.camera.view)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
