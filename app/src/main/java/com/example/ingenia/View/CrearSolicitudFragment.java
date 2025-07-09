@@ -8,10 +8,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.*;
 import android.widget.*;
@@ -20,16 +22,24 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageCaptureException;
+import androidx.camera.core.Preview;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+//import com.example.ingenia.Model.CameraINEActivity;
 import com.example.ingenia.Model.ClienteRequest;
 import com.example.ingenia.Model.Cliente;
 import com.example.ingenia.R;
 import com.example.ingenia.api.ApiConfig;
 import com.example.ingenia.api.UsuarioService;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +47,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.Executor;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -57,6 +68,13 @@ public class CrearSolicitudFragment extends Fragment {
     private File photoFile;
     private boolean datosValidados = false;
     private boolean modoSoloLectura = false;
+    private PreviewView previewView;
+    private Button btnCapture;
+    private ImageCapture imageCapture;
+    private Executor cameraExecutor;
+    private boolean isCameraActive = false;
+    private RelativeLayout cameraContainer;
+    private ImageView ineFrame;
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<String> permissionLauncher;
 
@@ -79,6 +97,13 @@ public class CrearSolicitudFragment extends Fragment {
         inputEstado = view.findViewById(R.id.input_estado);
         inputCp = view.findViewById(R.id.input_cp);
 
+        // Nuevas vistas para la cámara
+        cameraContainer = view.findViewById(R.id.camera_container);
+        previewView = view.findViewById(R.id.camera_preview);
+        ineFrame = view.findViewById(R.id.ine_frame);
+        btnCapture = view.findViewById(R.id.btn_capture);
+        imagenPreviewINE = view.findViewById(R.id.imagen_ine);
+
         labelCurpValida = view.findViewById(R.id.label_curp_valida);
         labelIneValida = view.findViewById(R.id.label_ine_valida);
 
@@ -86,11 +111,22 @@ public class CrearSolicitudFragment extends Fragment {
         btnValidar = view.findViewById(R.id.btn_validar_datos);
         btnSolicitar = view.findViewById(R.id.btn_crear_solicitud);
 
+
         btnEscanear = view.findViewById(R.id.btn_escanear_ine);
         imagenPreviewINE = view.findViewById(R.id.imagen_ine); // <-- Debes tener un ImageView en tu layout
 
-        btnEscanear.setOnClickListener(v -> abrirCamara());
+        previewView = view.findViewById(R.id.camera_preview);
+        btnCapture = view.findViewById(R.id.btn_capture);
 
+        // Inicializar ejecutor para la cámara
+        cameraExecutor = ContextCompat.getMainExecutor(requireContext());
+
+        // Configurar listeners
+        btnEscanear.setOnClickListener(v -> toggleCameraView());
+        btnCapture.setOnClickListener(v -> takePhoto());
+
+        // Ajustar tamaño del marco según la pantalla
+        ajustarTamanioMarco();
         // Si recibimos argumentos, asumimos modo solo lectura y cargamos datos
         Bundle args = getArguments();
         if (args != null && args.containsKey("nombre")) {
@@ -202,14 +238,14 @@ public class CrearSolicitudFragment extends Fragment {
                 new ActivityResultContracts.RequestPermission(),
                 isGranted -> {
                     if (isGranted) {
-                        lanzarIntentCamara();
+                        toggleCameraView();
                     } else {
                         Toast.makeText(getContext(), "Permiso de cámara denegado", Toast.LENGTH_SHORT).show();
                     }
                 }
         );
 
-        btnEscanear.setOnClickListener(v -> abrirCamara());
+        btnEscanear.setOnClickListener(v -> toggleCameraView());
 
         btnValidar.setOnClickListener(v -> simularValidacionDatos());
 
@@ -314,40 +350,133 @@ public class CrearSolicitudFragment extends Fragment {
             }
         });
     }
-    private void abrirCamara() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+    private void ajustarTamanioMarco() {
+        // Obtener dimensiones de la pantalla
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        requireActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int screenWidth = displayMetrics.widthPixels;
+
+        // Calcular tamaño del marco (80% del ancho de pantalla)
+        int frameWidth = (int) (screenWidth * 0.8);
+        int frameHeight = (int) (frameWidth * 0.633); // Relación 19:12 (INE)
+
+        // Aplicar nuevos parámetros
+        ViewGroup.LayoutParams params = ineFrame.getLayoutParams();
+        params.width = frameWidth;
+        params.height = frameHeight;
+        ineFrame.setLayoutParams(params);
+    }
+
+    private void toggleCameraView() {
+        if (isCameraActive) {
+            // Ocultar cámara y marco
+            cameraContainer.setVisibility(View.GONE);
+            btnCapture.setVisibility(View.GONE);
+            btnEscanear.setText("Escanear INE");
+            isCameraActive = false;
         } else {
-            lanzarIntentCamara();
+            // Mostrar cámara y marco
+            cameraContainer.setVisibility(View.VISIBLE);
+            btnCapture.setVisibility(View.VISIBLE);
+            btnEscanear.setText("Cancelar");
+            isCameraActive = true;
+            startCamera();
         }
     }
 
-    private void lanzarIntentCamara() {
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
+    private void startCamera() {
+        ListenableFuture<ProcessCameraProvider> cameraProviderFuture =
+                ProcessCameraProvider.getInstance(requireContext());
+
+        cameraProviderFuture.addListener(() -> {
             try {
-                photoFile = crearArchivoImagen();
-                if (photoFile != null) {
-                    photoUri = FileProvider.getUriForFile(
-                            requireContext(),
-                            requireContext().getPackageName() + ".fileprovider",
-                            photoFile
-                    );
-                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-                    cameraLauncher.launch(takePictureIntent);  // Usamos el launcher moderno
-                }
-            } catch (IOException ex) {
-                Toast.makeText(getContext(), "Error al crear archivo", Toast.LENGTH_SHORT).show();
+                ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+                Preview preview = new Preview.Builder().build();
+                preview.setSurfaceProvider(previewView.getSurfaceProvider());
+
+                imageCapture = new ImageCapture.Builder()
+                        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                        .build();
+
+                CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+
+                cameraProvider.unbindAll();
+                cameraProvider.bindToLifecycle(
+                        getViewLifecycleOwner(),
+                        cameraSelector,
+                        preview,
+                        imageCapture
+                );
+            } catch (Exception e) {
+                Log.e("CameraFragment", "Error al iniciar cámara", e);
+                Toast.makeText(requireContext(), "Error al iniciar cámara", Toast.LENGTH_SHORT).show();
             }
-        }
+        }, cameraExecutor);
     }
 
-    private File crearArchivoImagen() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-        String imageFileName = "INE_" + timeStamp;
-        File storageDir = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        return File.createTempFile(imageFileName, ".jpg", storageDir);
+    private void takePhoto() {
+        if (imageCapture == null) return;
+
+        // Crear archivo en almacenamiento interno privado
+        File photoFile = new File(requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                "INE_" + System.currentTimeMillis() + ".jpg");
+
+        ImageCapture.OutputFileOptions outputOptions =
+                new ImageCapture.OutputFileOptions.Builder(photoFile).build();
+
+        // Animación flash al tomar foto
+        ineFrame.setBackgroundColor(Color.WHITE);
+        ineFrame.postDelayed(() -> ineFrame.setBackgroundColor(Color.TRANSPARENT), 100);
+
+        imageCapture.takePicture(
+                outputOptions,
+                cameraExecutor,
+                new ImageCapture.OnImageSavedCallback() {
+                    @Override
+                    public void onImageSaved(ImageCapture.OutputFileResults output) {
+                        photoUri = Uri.fromFile(photoFile);
+
+                        requireActivity().runOnUiThread(() -> {
+                            // Mostrar imagen capturada
+                            imagenPreviewINE.setImageURI(photoUri);
+
+                            // Ocultar cámara después de capturar
+                            cameraContainer.setVisibility(View.GONE);
+                            btnCapture.setVisibility(View.GONE);
+                            btnEscanear.setText("Escanear INE");
+                            isCameraActive = false;
+
+                            Toast.makeText(requireContext(), "Foto guardada", Toast.LENGTH_SHORT).show();
+                        });
+                    }
+
+                    @Override
+                    public void onError(ImageCaptureException exception) {
+                        Log.e("CameraFragment", "Error de captura: " + exception.getMessage());
+                        requireActivity().runOnUiThread(() ->
+                                Toast.makeText(requireContext(), "Error al capturar foto", Toast.LENGTH_SHORT).show());
+                    }
+                }
+        );
+    }
+
+    // Configurar el launcher para la actividad de la cámara
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        cameraLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        String uriString = result.getData().getStringExtra("photoUri");
+                        if (uriString != null) {
+                            photoUri = Uri.parse(uriString);
+                            imagenPreviewINE.setImageURI(photoUri);
+                        }
+                    }
+                }
+        );
     }
 
     /*private void simularLlenadoOCR() {
