@@ -345,7 +345,7 @@ public class CrearSolicitudFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(Call<Cliente> call, Throwable t) {
+            public void onFailure(@NonNull Call<Cliente> call, Throwable t) {
                 Toast.makeText(getContext(), "Falla en la conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });

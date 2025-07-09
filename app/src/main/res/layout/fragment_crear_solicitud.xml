@@ -215,6 +215,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/Widget.CrediGo.Button"
+
             android:text="Solicitar credito"
             android:enabled="false" />
 
