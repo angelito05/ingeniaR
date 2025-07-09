@@ -44,7 +44,6 @@ public class ClientesFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recyclerClientes);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Inicializar Retrofit y servicio
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient client = new OkHttpClient.Builder().addInterceptor(logging).build();
@@ -57,7 +56,6 @@ public class ClientesFragment extends Fragment {
 
         service = retrofit.create(UsuarioService.class);
 
-        // Obtener ID del usuario desde SharedPreferences
         SharedPreferences prefs = requireActivity().getSharedPreferences("CrediGoPrefs", getContext().MODE_PRIVATE);
         idUsuario = prefs.getInt("id_usuario", -1);
 
@@ -79,22 +77,22 @@ public class ClientesFragment extends Fragment {
                     ClienteAdapter adapter = new ClienteAdapter(clientes, new ClienteAdapter.OnItemClickListener() {
                         @Override
                         public void onVerDetallesClicked(Cliente cliente) {
+                            // Código para abrir DetalleClienteFragment
                             DetalleClienteFragment fragment = new DetalleClienteFragment();
-
                             Bundle args = new Bundle();
                             args.putInt("id_cliente", cliente.idCliente);
                             fragment.setArguments(args);
 
                             requireActivity().getSupportFragmentManager()
                                     .beginTransaction()
-                                    .replace(R.id.container_fragment, fragment) // Asegúrate que este sea el ID correcto del contenedor en tu activity_main.xml
+                                    .replace(R.id.container_fragment, fragment)
                                     .addToBackStack(null)
                                     .commit();
                         }
 
                         @Override
-                        public void onCrearSolicitudClicked(Cliente cliente) {
-                            abrirCrearSolicitud(cliente);
+                        public void onAbrirSolicitudFinalClicked(Cliente cliente) {
+                            abrirSolicitudFinal(cliente.idCliente);
                         }
                     });
 
@@ -111,23 +109,11 @@ public class ClientesFragment extends Fragment {
         });
     }
 
-    private void abrirCrearSolicitud(Cliente cliente) {
-        CrearSolicitudFragment fragment = new CrearSolicitudFragment();
+    private void abrirSolicitudFinal(int idCliente) {
+        SolicitudFinalFragment fragment = new SolicitudFinalFragment();
 
         Bundle args = new Bundle();
-        args.putInt("id_cliente", cliente.idCliente);
-        args.putString("nombre", cliente.nombre);
-        args.putString("apellido_paterno", cliente.apellido_paterno);
-        args.putString("apellido_materno", cliente.apellido_materno);
-        args.putString("curp", cliente.curp);
-        args.putString("clave_elector", cliente.clave_elector);
-        args.putString("fecha_nacimiento", cliente.fecha_nacimiento);
-        args.putString("genero", cliente.genero);
-        args.putString("calle", cliente.calle);
-        args.putString("colonia", cliente.colonia);
-        args.putString("ciudad", cliente.ciudad);
-        args.putString("estado", cliente.estado);
-        args.putString("codigo_postal", cliente.codigo_postal);
+        args.putInt("id_cliente", idCliente);
 
         fragment.setArguments(args);
 

@@ -16,7 +16,7 @@ public class ClienteAdapter extends RecyclerView.Adapter<ClienteAdapter.ClienteV
 
     public interface OnItemClickListener {
         void onVerDetallesClicked(Cliente cliente);
-        void onCrearSolicitudClicked(Cliente cliente);
+        void onAbrirSolicitudFinalClicked(Cliente cliente);  // Nuevo método
     }
 
     private List<Cliente> listaClientes;
@@ -53,7 +53,7 @@ public class ClienteAdapter extends RecyclerView.Adapter<ClienteAdapter.ClienteV
 
         holder.btnCrearSolicitud.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onCrearSolicitudClicked(cliente);
+                listener.onAbrirSolicitudFinalClicked(cliente);
             }
         });
     }

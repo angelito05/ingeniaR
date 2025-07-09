@@ -120,9 +120,14 @@ public class RendimientoFragment extends Fragment {
 
                     actualizarGrafico(pendientes, aprobadas, rechazadas);
 
-                    recyclerView.setAdapter(new SolicitudAdapter(solicitudes, false, (id, estatus) -> {
-                        // callback vacío
-                    }));
+                    recyclerView.setAdapter(new SolicitudAdapter(
+                            solicitudes,
+                            false,
+                            (id, nuevoEstatus) -> { /* vacío porque trabajador no cambia estatus */ },
+                            id -> { /* vacío porque trabajador no elimina */ }
+                    ));
+
+
 
                 } else {
                     Toast.makeText(getContext(), "No se pudieron obtener las solicitudes", Toast.LENGTH_SHORT).show();

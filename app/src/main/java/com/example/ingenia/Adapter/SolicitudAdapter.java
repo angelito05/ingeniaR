@@ -11,17 +11,22 @@ import com.example.ingenia.R;
 
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.ViewHolder> {
 
     private final List<SolicitudCredito> lista;
     private final boolean esAdmin;
     private final BiConsumer<Integer, Integer> cambiarEstatusCallback; // (idSolicitud, nuevoEstatus)
+    private final Consumer<Integer> eliminarCallback; // (idSolicitud)
 
-    public SolicitudAdapter(List<SolicitudCredito> lista, boolean esAdmin, BiConsumer<Integer, Integer> callback) {
+    public SolicitudAdapter(List<SolicitudCredito> lista, boolean esAdmin,
+                            BiConsumer<Integer, Integer> cambiarEstatusCallback,
+                            Consumer<Integer> eliminarCallback) {
         this.lista = lista;
         this.esAdmin = esAdmin;
-        this.cambiarEstatusCallback = callback;
+        this.cambiarEstatusCallback = cambiarEstatusCallback;
+        this.eliminarCallback = eliminarCallback;
     }
 
     @NonNull
@@ -45,19 +50,17 @@ public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.View
         // Mostrar trabajador y botones solo si es admin
         if (esAdmin) {
             holder.trabajador.setVisibility(View.VISIBLE);
-            holder.trabajador.setText("Registrado por: " + sc.nombreUsuario); // Puedes mostrar nombre real si lo incluyes en el modelo
+            holder.trabajador.setText("Registrado por: " + sc.nombreUsuario);
             holder.botonesEstado.setVisibility(View.VISIBLE);
+            holder.btnEliminar.setVisibility(View.VISIBLE);
 
-            holder.btnAprobar.setOnClickListener(v -> {
-                cambiarEstatusCallback.accept(sc.id_solicitud, 2); // 2 = Aprobado
-            });
-
-            holder.btnRechazar.setOnClickListener(v -> {
-                cambiarEstatusCallback.accept(sc.id_solicitud, 3); // 3 = Rechazado
-            });
+            holder.btnAprobar.setOnClickListener(v -> cambiarEstatusCallback.accept(sc.id_solicitud, 2));
+            holder.btnRechazar.setOnClickListener(v -> cambiarEstatusCallback.accept(sc.id_solicitud, 3));
+            holder.btnEliminar.setOnClickListener(v -> eliminarCallback.accept(sc.id_solicitud));
         } else {
             holder.trabajador.setVisibility(View.GONE);
             holder.botonesEstado.setVisibility(View.GONE);
+            holder.btnEliminar.setVisibility(View.GONE);
         }
 
         // Icono según estatus
@@ -90,6 +93,8 @@ public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.View
         TextView nombre, detalles, trabajador;
         ImageView icono;
         Button btnAprobar, btnRechazar;
+        ImageButton btnEliminar;
+
         View botonesEstado;
 
         ViewHolder(View itemView) {
@@ -99,6 +104,7 @@ public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.View
             trabajador = itemView.findViewById(R.id.trabajador);
             btnAprobar = itemView.findViewById(R.id.btnAprobar);
             btnRechazar = itemView.findViewById(R.id.btnRechazar);
+            btnEliminar = itemView.findViewById(R.id.btnEliminar);
             botonesEstado = itemView.findViewById(R.id.botonesEstado);
             icono = itemView.findViewById(R.id.iconoEstado);
         }
