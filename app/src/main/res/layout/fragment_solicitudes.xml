@@ -44,6 +44,13 @@
         android:textSize="16sp"
         android:layout_marginBottom="8dp" />
 
+    <com.github.mikephil.charting.charts.BarChart
+        android:id="@+id/barChart"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginTop="16dp"/>
+
+
     <!-- RecyclerView para solicitudes -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerSolicitudes"
