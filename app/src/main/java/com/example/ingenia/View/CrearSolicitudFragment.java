@@ -7,7 +7,6 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -42,11 +41,7 @@ import com.example.ingenia.api.UsuarioService;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
 import java.util.concurrent.Executor;
 
 import okhttp3.OkHttpClient;
@@ -245,7 +240,7 @@ public class CrearSolicitudFragment extends Fragment {
                 }
         );
 
-        btnEscanear.setOnClickListener(v -> toggleCameraView());
+        btnEscanear.setOnClickListener(v -> simularLlenadoOCR());
 
         btnValidar.setOnClickListener(v -> simularValidacionDatos());
 
@@ -479,7 +474,7 @@ public class CrearSolicitudFragment extends Fragment {
         );
     }
 
-    /*private void simularLlenadoOCR() {
+    private void simularLlenadoOCR() {
         inputNombre.setText("Karen");
         inputApellidoPaterno.setText("Bello");
         inputApellidoMaterno.setText("Ramírez");
@@ -494,7 +489,7 @@ public class CrearSolicitudFragment extends Fragment {
         inputCp.setText("06000");
 
         Toast.makeText(getContext(), "Datos escaneados (simulado)", Toast.LENGTH_SHORT).show();
-    }*/
+    }
 
     private void simularValidacionDatos() {
         labelCurpValida.setText("CURP: VÁLIDA");

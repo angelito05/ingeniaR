@@ -26,7 +26,6 @@ import retrofit2.*;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class SolicitudesFragment extends Fragment {
-
     private RecyclerView recyclerView;
     private TextView total, aprobadas, rechazadas;
     private UsuarioService service;
@@ -53,7 +52,6 @@ public class SolicitudesFragment extends Fragment {
         configurarRetrofit();
         cargarSolicitudes();
     }
-
     private void configurarRetrofit() {
         if (service != null) return;
 

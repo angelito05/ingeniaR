@@ -3,6 +3,9 @@ package com.example.ingenia.View;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.*;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -35,10 +38,12 @@ import retrofit2.*;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RendimientoFragment extends Fragment {
-
     private RecyclerView recyclerView;
     private int idUsuario;
     private PieChart pieChart;
+    private Spinner spinnerFiltro;
+
+    private List<SolicitudCredito> listaCompletaSolicitudes;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -57,6 +62,7 @@ public class RendimientoFragment extends Fragment {
 
         pieChart = view.findViewById(R.id.pieChart);
         configurarPieChart();
+        spinnerFiltro = view.findViewById(R.id.spinnerFiltro);
 
         SharedPreferences prefs = requireActivity().getSharedPreferences("CrediGoPrefs", getContext().MODE_PRIVATE);
         idUsuario = prefs.getInt("id_usuario", -1);
@@ -65,8 +71,26 @@ public class RendimientoFragment extends Fragment {
             Toast.makeText(getContext(), "Usuario no válido", Toast.LENGTH_SHORT).show();
             return;
         }
-
+        configurarSpinner();
         obtenerSolicitudesUsuario();
+    }
+    private void configurarSpinner() {
+        String[] opciones = {"Todos", "Pendientes", "Aprobadas", "Rechazadas"};
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, opciones);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerFiltro.setAdapter(adapter);
+
+        spinnerFiltro.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                filtrarSolicitudes(position); // ← Aplica el filtro al cambiar la opción
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
     }
 
     private void configurarPieChart() {
@@ -100,35 +124,11 @@ public class RendimientoFragment extends Fragment {
             @Override
             public void onResponse(Call<List<SolicitudCredito>> call, Response<List<SolicitudCredito>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<SolicitudCredito> solicitudes = response.body();
+                    listaCompletaSolicitudes = response.body(); // ← Guardamos todas
 
-                    int pendientes = 0, aprobadas = 0, rechazadas = 0;
-
-                    for (SolicitudCredito s : solicitudes) {
-                        switch (s.id_estatus) {
-                            case 1:
-                                pendientes++;
-                                break;
-                            case 2:
-                                aprobadas++;
-                                break;
-                            case 3:
-                                rechazadas++;
-                                break;
-                        }
-                    }
-
-                    actualizarGrafico(pendientes, aprobadas, rechazadas);
-
-                    recyclerView.setAdapter(new SolicitudAdapter(
-                            solicitudes,
-                            false,
-                            (id, nuevoEstatus) -> { /* vacío porque trabajador no cambia estatus */ },
-                            id -> { /* vacío porque trabajador no elimina */ }
-                    ));
-
-
-
+                    // Llama al filtro actual para mostrarlas
+                    int seleccion = spinnerFiltro.getSelectedItemPosition();
+                    filtrarSolicitudes(seleccion);
                 } else {
                     Toast.makeText(getContext(), "No se pudieron obtener las solicitudes", Toast.LENGTH_SHORT).show();
                 }
@@ -140,6 +140,37 @@ public class RendimientoFragment extends Fragment {
             }
         });
     }
+    private void filtrarSolicitudes(int filtroSeleccionado) {
+        if (listaCompletaSolicitudes == null) return;
+
+        List<SolicitudCredito> filtradas = new ArrayList<>();
+        int pendientes = 0, aprobadas = 0, rechazadas = 0;
+
+        for (SolicitudCredito s : listaCompletaSolicitudes) {
+            switch (s.id_estatus) {
+                case 1: pendientes++; break;
+                case 2: aprobadas++; break;
+                case 3: rechazadas++; break;
+            }
+
+            if (filtroSeleccionado == 0 || // Todos
+                    (filtroSeleccionado == 1 && s.id_estatus == 1) ||
+                    (filtroSeleccionado == 2 && s.id_estatus == 2) ||
+                    (filtroSeleccionado == 3 && s.id_estatus == 3)) {
+                filtradas.add(s);
+            }
+        }
+
+        actualizarGrafico(pendientes, aprobadas, rechazadas);
+
+        recyclerView.setAdapter(new SolicitudAdapter(
+                filtradas,
+                false,
+                (id, nuevoEstatus) -> { },
+                id -> { }
+        ));
+    }
+
 
     private void actualizarGrafico(int pendientes, int aprobadas, int rechazadas) {
         List<PieEntry> entries = new ArrayList<>();
@@ -192,7 +223,6 @@ public class RendimientoFragment extends Fragment {
         int total = pendientes + aprobadas + rechazadas;
         actualizarCentroPieChart(total);
 
-
         pieChart.setData(data);
         pieChart.animateY(1400, com.github.mikephil.charting.animation.Easing.EaseInOutQuad);
         pieChart.invalidate();
@@ -219,11 +249,4 @@ public class RendimientoFragment extends Fragment {
         pieChart.setCenterText(s);
     }
 
-    private List<String> getLabels(int pendientes, int aprobadas, int rechazadas) {
-        List<String> labels = new ArrayList<>();
-        if (pendientes > 0) labels.add("Pendientes");
-        if (aprobadas > 0) labels.add("Aprobadas");
-        if (rechazadas > 0) labels.add("Rechazadas");
-        return labels;
-    }
 }
