@@ -50,6 +50,13 @@
         android:layout_height="300dp"
         android:layout_marginTop="16dp"/>
 
+    <Spinner
+        android:id="@+id/spinnerFiltroAdmin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/Widget.CrediGo.Spinner"
+        android:layout_margin="16dp"/>
+
 
     <!-- RecyclerView para solicitudes -->
     <androidx.recyclerview.widget.RecyclerView

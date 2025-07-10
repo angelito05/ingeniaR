@@ -3,8 +3,7 @@ package com.example.ingenia.View;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.*;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,15 +17,12 @@ import com.example.ingenia.R;
 import com.example.ingenia.api.ApiConfig;
 import com.example.ingenia.api.UsuarioService;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.*;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+
+import java.util.*;
 
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
@@ -37,8 +33,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class SolicitudesFragment extends Fragment {
     private RecyclerView recyclerView;
     private TextView total, aprobadas, rechazadas;
+    private Spinner spinnerFiltroAdmin;
     private BarChart barChart;
+
     private UsuarioService service;
+    private List<SolicitudCredito> listaCompleta = new ArrayList<>();
+    private SolicitudAdapter adapter;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -56,12 +56,33 @@ public class SolicitudesFragment extends Fragment {
         aprobadas = view.findViewById(R.id.contadorAprobadas);
         rechazadas = view.findViewById(R.id.contadorRechazadas);
         barChart = view.findViewById(R.id.barChart);
+        spinnerFiltroAdmin = view.findViewById(R.id.spinnerFiltroAdmin);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        configurarSpinner();
         configurarRetrofit();
         cargarSolicitudes();
     }
+
+    private void configurarSpinner() {
+        String[] opciones = {"Todos", "Pendientes", "Aprobadas", "Rechazadas"};
+
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(requireContext(), R.layout.spinner_item, opciones);
+        spinnerAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        spinnerFiltroAdmin.setAdapter(spinnerAdapter);
+
+        spinnerFiltroAdmin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                filtrarSolicitudes(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+    }
+
     private void configurarRetrofit() {
         if (service != null) return;
 
@@ -88,66 +109,8 @@ public class SolicitudesFragment extends Fragment {
                 if (!isAdded()) return;
 
                 if (response.isSuccessful() && response.body() != null) {
-                    List<SolicitudCredito> solicitudes = response.body();
-
-                    int aprobadasCount = 0, rechazadasCount = 0;
-                    for (SolicitudCredito s : solicitudes) {
-                        if (s.id_estatus == 2) aprobadasCount++;
-                        else if (s.id_estatus == 3) rechazadasCount++;
-                    }
-
-                    int totalCount = solicitudes.size();
-                    int pendientesCount = totalCount - aprobadasCount - rechazadasCount;
-
-                    total.setText("Total de solicitudes: " + totalCount);
-                    aprobadas.setText("Aprobadas: " + aprobadasCount);
-                    rechazadas.setText("Rechazadas: " + rechazadasCount);
-
-                    // Configurar gráfico de barras
-                    List<BarEntry> entries = new ArrayList<>();
-                    entries.add(new BarEntry(0f, aprobadasCount));
-                    entries.add(new BarEntry(1f, rechazadasCount));
-                    entries.add(new BarEntry(2f, pendientesCount));
-
-                    BarDataSet dataSet = new BarDataSet(entries, "Solicitudes por estado");
-                    dataSet.setColors(
-                            Color.parseColor("#4CAF50"), // Verde - Aprobadas
-                            Color.parseColor("#F44336"), // Rojo - Rechazadas
-                            Color.parseColor("#FFC107")  // Amarillo - Pendientes
-                    );
-                    dataSet.setValueTextSize(14f);
-
-                    BarData barData = new BarData(dataSet);
-                    barChart.setData(barData);
-                    barChart.getDescription().setEnabled(false);
-                    barChart.getLegend().setEnabled(false);
-
-                    String[] labels = new String[]{"Aprobadas", "Rechazadas", "Pendientes"};
-                    XAxis xAxis = barChart.getXAxis();
-                    xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
-                    xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-                    xAxis.setGranularity(1f);
-                    xAxis.setLabelCount(labels.length);
-                    xAxis.setDrawGridLines(false);
-
-                    barChart.getAxisRight().setEnabled(false); // Ocultar eje derecho
-                    barChart.getAxisLeft().setGranularity(1f);
-                    barChart.getAxisLeft().setAxisMinimum(0f);
-
-                    barChart.animateY(1000);
-                    barChart.invalidate();
-
-                    // Mostrar solicitudes en RecyclerView
-                    SolicitudAdapter adapter = new SolicitudAdapter(
-                            solicitudes,
-                            true,
-                            (idSolicitud, nuevoEstatus) -> cambiarEstatus(idSolicitud, nuevoEstatus),
-                            idSolicitud -> eliminarSolicitud(idSolicitud),
-                            solicitud -> { /* no hace nada al click */ }
-                    );
-
-                    recyclerView.setAdapter(adapter);
-
+                    listaCompleta = response.body();
+                    filtrarSolicitudes(spinnerFiltroAdmin.getSelectedItemPosition());
                 } else {
                     Toast.makeText(getContext(), "Error al obtener solicitudes", Toast.LENGTH_SHORT).show();
                 }
@@ -159,6 +122,89 @@ public class SolicitudesFragment extends Fragment {
                 Toast.makeText(getContext(), "Error de conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private void filtrarSolicitudes(int filtro) {
+        if (listaCompleta == null) return;
+
+        List<SolicitudCredito> filtradas = new ArrayList<>();
+        int pendientesCount = 0, aprobadasCount = 0, rechazadasCount = 0;
+
+        for (SolicitudCredito s : listaCompleta) {
+            // Aplica filtro visual
+            if (filtro == 0 || // Todos
+                    (filtro == 1 && s.id_estatus == 1) ||
+                    (filtro == 2 && s.id_estatus == 2) ||
+                    (filtro == 3 && s.id_estatus == 3)) {
+                filtradas.add(s);
+                // Solo cuenta para la gráfica los filtrados
+                if (s.id_estatus == 1) pendientesCount++;
+                else if (s.id_estatus == 2) aprobadasCount++;
+                else if (s.id_estatus == 3) rechazadasCount++;
+            }
+        }
+
+        // Actualiza texto contadores (de acuerdo a filtro)
+        total.setText("Total: " + filtradas.size());
+        aprobadas.setText("Aprobadas: " + contarPorEstado(filtradas, 2));
+        rechazadas.setText("Rechazadas: " + contarPorEstado(filtradas, 3));
+
+        // Actualiza gráfico CON DATOS FILTRADOS
+        actualizarGrafico(aprobadasCount, rechazadasCount, pendientesCount);
+
+        // Actualiza RecyclerView
+        adapter = new SolicitudAdapter(
+                filtradas,
+                true,
+                this::cambiarEstatus,
+                this::eliminarSolicitud,
+                solicitud -> {}
+        );
+        recyclerView.setAdapter(adapter);
+    }
+
+
+    private void actualizarGrafico(int aprobadas, int rechazadas, int pendientes) {
+        List<BarEntry> entries = new ArrayList<>();
+        entries.add(new BarEntry(0f, aprobadas));
+        entries.add(new BarEntry(1f, rechazadas));
+        entries.add(new BarEntry(2f, pendientes));
+
+        BarDataSet dataSet = new BarDataSet(entries, "Solicitudes por estado");
+        dataSet.setColors(
+                Color.parseColor("#4CAF50"), // Verde
+                Color.parseColor("#F44336"), // Rojo
+                Color.parseColor("#FFC107")  // Amarillo
+        );
+        dataSet.setValueTextSize(14f);
+
+        BarData barData = new BarData(dataSet);
+        barChart.setData(barData);
+        barChart.getDescription().setEnabled(false);
+        barChart.getLegend().setEnabled(false);
+
+        String[] labels = {"Aprobadas", "Rechazadas", "Pendientes"};
+        XAxis xAxis = barChart.getXAxis();
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setGranularity(1f);
+        xAxis.setLabelCount(labels.length);
+        xAxis.setDrawGridLines(false);
+
+        barChart.getAxisRight().setEnabled(false);
+        barChart.getAxisLeft().setGranularity(1f);
+        barChart.getAxisLeft().setAxisMinimum(0f);
+
+        barChart.animateY(1000);
+        barChart.invalidate();
+    }
+
+    private int contarPorEstado(List<SolicitudCredito> lista, int estado) {
+        int count = 0;
+        for (SolicitudCredito s : lista) {
+            if (s.id_estatus == estado) count++;
+        }
+        return count;
     }
 
     private void cambiarEstatus(int idSolicitud, int nuevoEstatus) {
