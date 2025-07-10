@@ -1,12 +1,11 @@
 package com.example.ingenia.View;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import okhttp3.ResponseBody;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.*;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -15,21 +14,10 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.*;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.*;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ingenia.Adapter.SolicitudAdapter;
 import com.example.ingenia.Model.SolicitudCredito;
@@ -50,18 +38,12 @@ import retrofit2.*;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RendimientoFragment extends Fragment {
-
     private RecyclerView recyclerView;
     private int idUsuario;
     private PieChart pieChart;
     private Spinner spinnerFiltro;
 
     private List<SolicitudCredito> listaCompletaSolicitudes;
-
-    private List<SolicitudCredito> solicitudesActuales = new ArrayList<>();
-    private SolicitudAdapter adapter;
-
-    private UsuarioService service;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -142,26 +124,11 @@ public class RendimientoFragment extends Fragment {
             @Override
             public void onResponse(Call<List<SolicitudCredito>> call, Response<List<SolicitudCredito>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<SolicitudCredito> solicitudes = response.body();
+                    listaCompletaSolicitudes = response.body(); // ← Guardamos todas
 
-                    int pendientes = 0, aprobadas = 0, rechazadas = 0;
-
-                    for (SolicitudCredito s : solicitudes) {
-                        switch (s.id_estatus) {
-                            case 1:
-                                pendientes++;
-                                break;
-                            case 2:
-                                aprobadas++;
-                                break;
-                            case 3:
-                                rechazadas++;
-                                break;
-                        }
-                    }
-
-                    actualizarGrafico(pendientes, aprobadas, rechazadas);
-
+                    // Llama al filtro actual para mostrarlas
+                    int seleccion = spinnerFiltro.getSelectedItemPosition();
+                    filtrarSolicitudes(seleccion);
                 } else {
                     Toast.makeText(getContext(), "No se pudieron obtener las solicitudes", Toast.LENGTH_SHORT).show();
                 }
@@ -195,8 +162,10 @@ public class RendimientoFragment extends Fragment {
         }
 
         actualizarGrafico(pendientes, aprobadas, rechazadas);
-    }
 
+        SolicitudAdapter adapter = new SolicitudAdapter(filtradas, false, null, null, null);
+        recyclerView.setAdapter(adapter);
+    }
 
 
     private void actualizarGrafico(int pendientes, int aprobadas, int rechazadas) {
@@ -254,6 +223,7 @@ public class RendimientoFragment extends Fragment {
         pieChart.animateY(1400, com.github.mikephil.charting.animation.Easing.EaseInOutQuad);
         pieChart.invalidate();
     }
+
     private void actualizarCentroPieChart(int total) {
         String titulo = "Solicitudes\n";
         String numero = String.valueOf(total);
