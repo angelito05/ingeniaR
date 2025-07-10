@@ -104,6 +104,13 @@ public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.View
         return lista.size();
     }
 
+    public void actualizarLista(List<SolicitudCredito> nuevaLista) {
+        lista.clear();
+        lista.addAll(nuevaLista);
+        notifyDataSetChanged();
+    }
+
+
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView nombre, detalles, trabajador;
         ImageView icono;
