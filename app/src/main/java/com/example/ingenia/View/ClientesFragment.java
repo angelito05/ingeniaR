@@ -3,6 +3,7 @@ package com.example.ingenia.View;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.*;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -16,6 +17,7 @@ import com.example.ingenia.R;
 import com.example.ingenia.api.ApiConfig;
 import com.example.ingenia.api.UsuarioService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
@@ -25,6 +27,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ClientesFragment extends Fragment {
 
+    private List<Cliente> listaOriginal; // Lista completa sin filtrar
+    private ClienteAdapter adapter;
+    private SearchView searchView;
     private RecyclerView recyclerView;
     private int idUsuario;
     private UsuarioService service;
@@ -41,6 +46,7 @@ public class ClientesFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        searchView = view.findViewById(R.id.searchViewClientes);
         recyclerView = view.findViewById(R.id.recyclerClientes);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
@@ -65,6 +71,20 @@ public class ClientesFragment extends Fragment {
         }
 
         obtenerClientesPorUsuario();
+
+        // Escucha para el buscador
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false; // No hacemos nada especial al enviar
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                filtrarClientes(newText);
+                return true;
+            }
+        });
     }
 
     private void obtenerClientesPorUsuario() {
@@ -72,12 +92,11 @@ public class ClientesFragment extends Fragment {
             @Override
             public void onResponse(Call<List<Cliente>> call, Response<List<Cliente>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<Cliente> clientes = response.body();
+                    listaOriginal = response.body();
 
-                    ClienteAdapter adapter = new ClienteAdapter(clientes, new ClienteAdapter.OnItemClickListener() {
+                    adapter = new ClienteAdapter(new ArrayList<>(listaOriginal), new ClienteAdapter.OnItemClickListener() {
                         @Override
                         public void onVerDetallesClicked(Cliente cliente) {
-                            // Código para abrir DetalleClienteFragment
                             DetalleClienteFragment fragment = new DetalleClienteFragment();
                             Bundle args = new Bundle();
                             args.putInt("id_cliente", cliente.idCliente);
@@ -97,6 +116,7 @@ public class ClientesFragment extends Fragment {
                     });
 
                     recyclerView.setAdapter(adapter);
+
                 } else {
                     Toast.makeText(getContext(), "No se pudieron obtener los clientes", Toast.LENGTH_SHORT).show();
                 }
@@ -108,6 +128,20 @@ public class ClientesFragment extends Fragment {
             }
         });
     }
+
+    private void filtrarClientes(String texto) {
+        List<Cliente> filtrados = new ArrayList<>();
+        for (Cliente cliente : listaOriginal) {
+            if (cliente.nombre.toLowerCase().contains(texto.toLowerCase()) ||
+                    cliente.apellido_paterno.toLowerCase().contains(texto.toLowerCase()) ||
+                    cliente.apellido_materno.toLowerCase().contains(texto.toLowerCase()) ||
+                    cliente.curp.toLowerCase().contains(texto.toLowerCase())) {
+                filtrados.add(cliente);
+            }
+        }
+        adapter.actualizarLista(filtrados);
+    }
+
 
     private void abrirSolicitudFinal(int idCliente) {
         SolicitudFinalFragment fragment = new SolicitudFinalFragment();

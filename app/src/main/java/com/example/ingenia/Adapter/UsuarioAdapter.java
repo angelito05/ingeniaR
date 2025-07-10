@@ -249,6 +249,7 @@ public class UsuarioAdapter extends RecyclerView.Adapter<UsuarioAdapter.UsuarioV
         return usuarios.size();
     }
 
+
     public static class UsuarioViewHolder extends RecyclerView.ViewHolder {
 
         TextView username, detalles;
@@ -268,4 +269,12 @@ public class UsuarioAdapter extends RecyclerView.Adapter<UsuarioAdapter.UsuarioV
             layoutAcciones = itemView.findViewById(R.id.accionesUsuario);
         }
     }
+
+    @SuppressLint("NotifyDataSetChanged")
+    public void actualizarLista(List<User> nuevaLista) {
+        usuarios.clear();
+        usuarios.addAll(nuevaLista);
+        notifyDataSetChanged();
+    }
+
 }
