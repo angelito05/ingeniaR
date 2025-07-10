@@ -162,15 +162,6 @@ public class RendimientoFragment extends Fragment {
 
                     actualizarGrafico(pendientes, aprobadas, rechazadas);
 
-                    recyclerView.setAdapter(new SolicitudAdapter(
-                            solicitudes,
-                            false,
-                            (id, nuevoEstatus) -> { /* vacío porque trabajador no cambia estatus */ },
-                            id -> { /* vacío porque trabajador no elimina */ }
-                    ));
-
-
-
                 } else {
                     Toast.makeText(getContext(), "No se pudieron obtener las solicitudes", Toast.LENGTH_SHORT).show();
                 }
@@ -204,13 +195,6 @@ public class RendimientoFragment extends Fragment {
         }
 
         actualizarGrafico(pendientes, aprobadas, rechazadas);
-
-        recyclerView.setAdapter(new SolicitudAdapter(
-                filtradas,
-                false,
-                (id, nuevoEstatus) -> { },
-                id -> { }
-        ));
     }
 
 
@@ -270,7 +254,6 @@ public class RendimientoFragment extends Fragment {
         pieChart.animateY(1400, com.github.mikephil.charting.animation.Easing.EaseInOutQuad);
         pieChart.invalidate();
     }
-
     private void actualizarCentroPieChart(int total) {
         String titulo = "Solicitudes\n";
         String numero = String.valueOf(total);
