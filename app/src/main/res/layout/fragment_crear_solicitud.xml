@@ -10,17 +10,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/text_primary"
-            android:text="NUEVA SOLICITUD"
+            android:text="Agregar Cliente"
             android:textSize="24sp"
             android:textStyle="bold"
             android:layout_marginBottom="24dp" />
+
         <Button
             android:id="@+id/btn_escanear_ine"
+            style="@style/Widget.CrediGo.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/Widget.CrediGo.Button"
+            android:layout_marginBottom="24dp"
             android:text="Escanear INE 📷"
-            android:layout_marginBottom="24dp" />
+            android:textSize="20sp" />
 
         <RelativeLayout
             android:id="@+id/camera_container"
@@ -53,9 +55,9 @@
             android:visibility="gone"
             android:layout_below="@id/camera_container"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="24dp"
             android:backgroundTint="@color/purple_500"
-            android:textColor="@color/text_primary"/>
+            android:textColor="@color/button_text"/>
 
         <ImageView
             android:id="@+id/imagen_ine"

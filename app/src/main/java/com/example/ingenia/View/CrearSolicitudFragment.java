@@ -240,7 +240,7 @@ public class CrearSolicitudFragment extends Fragment {
                 }
         );
 
-        btnEscanear.setOnClickListener(v -> simularLlenadoOCR());
+        btnEscanear.setOnClickListener(v -> toggleCameraView());
 
         btnValidar.setOnClickListener(v -> simularValidacionDatos());
 

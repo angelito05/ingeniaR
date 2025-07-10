@@ -3,7 +3,7 @@
     <item
         android:id="@+id/solicitudes"
         android:icon="@drawable/ic_stats"
-        android:title="Solicitudes" />
+        android:title="Mi Rendimiento" />
     <item
         android:id="@+id/clientes"
         android:icon="@drawable/clients"
@@ -15,7 +15,7 @@
     <item
         android:id="@+id/nav_register"
         android:icon="@drawable/ic_crear"
-        android:title="Crear solicitud" />
+        android:title="Crear Solicitud" />
 
 
 </menu>
