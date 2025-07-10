@@ -22,11 +22,17 @@
         android:layout_height="350dp"
         android:layout_marginBottom="16dp" />
 
+    <Spinner
+        android:id="@+id/spinnerFiltro"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/Widget.CrediGo.Spinner"
+        android:layout_margin="16dp"
+        />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerRendimiento"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
-
 </LinearLayout>

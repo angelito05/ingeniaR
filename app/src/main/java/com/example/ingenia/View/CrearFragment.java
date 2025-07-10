@@ -28,7 +28,6 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class CrearFragment extends Fragment {
-
     private TextInputEditText editCorreo, editUsername, editPassword;
     private Spinner spinnerRol;
     private MaterialButton btnRegistrar;
@@ -45,13 +44,11 @@ public class CrearFragment extends Fragment {
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 getContext(),
-                R.layout.spinner_item, // Para el ítem seleccionado
+                R.layout.spinner_item,
                 new String[]{"Administrador", "Trabajador"}
         );
         adapter.setDropDownViewResource(R.layout.spinner_dropdown_item); // Para el menú desplegable
         spinnerRol.setAdapter(adapter);
-
-
 
         btnRegistrar.setOnClickListener(v -> registrarUsuario());
         return view;
