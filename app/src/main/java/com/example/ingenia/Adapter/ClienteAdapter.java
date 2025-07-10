@@ -63,6 +63,11 @@ public class ClienteAdapter extends RecyclerView.Adapter<ClienteAdapter.ClienteV
         return listaClientes.size();
     }
 
+    public void actualizarLista(List<Cliente> nuevaLista) {
+        this.listaClientes = nuevaLista;
+        notifyDataSetChanged();
+    }
+
     public static class ClienteViewHolder extends RecyclerView.ViewHolder {
         TextView txtNombre, txtCiudad, txtCurp, txtClaveElector, txtFechaNacimiento;
         Button btnVerDetalles, btnCrearSolicitud;

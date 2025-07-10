@@ -19,6 +19,13 @@
             android:gravity="center"
             android:layout_marginBottom="8dp" />
 
+        <SearchView
+            android:id="@+id/searchViewUsuarios"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:iconifiedByDefault="false"
+            android:queryHint="Buscar Promotor..." />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerPromotores"
             android:layout_width="match_parent"
