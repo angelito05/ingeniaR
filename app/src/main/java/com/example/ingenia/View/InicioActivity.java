@@ -31,10 +31,6 @@ public class InicioActivity extends AppCompatActivity {
             return;
         }
 
-        // Mostrar mensaje de bienvenida
-        TextView bienvenidaText = findViewById(R.id.bienvenida);
-        bienvenidaText.setText("Bienvenido " + nombreUsuario);
-
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_nav);
 
         // Fragmento inicial
