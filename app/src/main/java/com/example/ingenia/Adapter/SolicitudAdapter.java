@@ -17,16 +17,24 @@ public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.View
 
     private final List<SolicitudCredito> lista;
     private final boolean esAdmin;
-    private final BiConsumer<Integer, Integer> cambiarEstatusCallback; // (idSolicitud, nuevoEstatus)
-    private final Consumer<Integer> eliminarCallback; // (idSolicitud)
+    private final BiConsumer<Integer, Integer> cambiarEstatusCallback;
+    private final Consumer<Integer> eliminarCallback;
+    private final OnItemClickListener itemClickListener; // <-- NUEVO
 
-    public SolicitudAdapter(List<SolicitudCredito> lista, boolean esAdmin,
+    public interface OnItemClickListener {
+        void onItemClick(SolicitudCredito solicitud);
+    }
+
+    public SolicitudAdapter(List<SolicitudCredito> lista,
+                            boolean esAdmin,
                             BiConsumer<Integer, Integer> cambiarEstatusCallback,
-                            Consumer<Integer> eliminarCallback) {
+                            Consumer<Integer> eliminarCallback,
+                            OnItemClickListener itemClickListener) {
         this.lista = lista;
         this.esAdmin = esAdmin;
         this.cambiarEstatusCallback = cambiarEstatusCallback;
         this.eliminarCallback = eliminarCallback;
+        this.itemClickListener = itemClickListener;
     }
 
     @NonNull
@@ -47,7 +55,7 @@ public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.View
                         "Motivo: " + sc.motivo
         );
 
-        // Mostrar trabajador y botones solo si es admin
+        // Mostrar controles si es admin
         if (esAdmin) {
             holder.trabajador.setVisibility(View.VISIBLE);
             holder.trabajador.setText("Registrado por: " + sc.nombreUsuario);
@@ -61,9 +69,16 @@ public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.View
             holder.trabajador.setVisibility(View.GONE);
             holder.botonesEstado.setVisibility(View.GONE);
             holder.btnEliminar.setVisibility(View.GONE);
+
+            // Si no es admin, al hacer clic en la tarjeta se ejecuta el callback
+            holder.itemView.setOnClickListener(v -> {
+                if (itemClickListener != null) {
+                    itemClickListener.onItemClick(sc);
+                }
+            });
         }
 
-        // Icono según estatus
+        // Icono de estado
         switch (sc.id_estatus) {
             case 1:
                 holder.icono.setImageResource(R.drawable.ic_pending);
@@ -94,7 +109,6 @@ public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.View
         ImageView icono;
         Button btnAprobar, btnRechazar;
         ImageButton btnEliminar;
-
         View botonesEstado;
 
         ViewHolder(View itemView) {

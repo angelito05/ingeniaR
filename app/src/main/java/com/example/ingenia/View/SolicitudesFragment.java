@@ -1,5 +1,6 @@
 package com.example.ingenia.View;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.TextView;
@@ -17,7 +18,15 @@ import com.example.ingenia.R;
 import com.example.ingenia.api.ApiConfig;
 import com.example.ingenia.api.UsuarioService;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
@@ -28,6 +37,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class SolicitudesFragment extends Fragment {
     private RecyclerView recyclerView;
     private TextView total, aprobadas, rechazadas;
+    private BarChart barChart;
     private UsuarioService service;
 
     @Override
@@ -38,14 +48,14 @@ public class SolicitudesFragment extends Fragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view,
-                              @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         recyclerView = view.findViewById(R.id.recyclerSolicitudes);
         total = view.findViewById(R.id.contadorTotal);
         aprobadas = view.findViewById(R.id.contadorAprobadas);
         rechazadas = view.findViewById(R.id.contadorRechazadas);
+        barChart = view.findViewById(R.id.barChart);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
@@ -86,16 +96,54 @@ public class SolicitudesFragment extends Fragment {
                         else if (s.id_estatus == 3) rechazadasCount++;
                     }
 
-                    total.setText("Total de solicitudes: " + solicitudes.size());
+                    int totalCount = solicitudes.size();
+                    int pendientesCount = totalCount - aprobadasCount - rechazadasCount;
+
+                    total.setText("Total de solicitudes: " + totalCount);
                     aprobadas.setText("Aprobadas: " + aprobadasCount);
                     rechazadas.setText("Rechazadas: " + rechazadasCount);
 
-                    // Pasar callbacks para cambiar estatus y eliminar
+                    // Configurar gráfico de barras
+                    List<BarEntry> entries = new ArrayList<>();
+                    entries.add(new BarEntry(0f, aprobadasCount));
+                    entries.add(new BarEntry(1f, rechazadasCount));
+                    entries.add(new BarEntry(2f, pendientesCount));
+
+                    BarDataSet dataSet = new BarDataSet(entries, "Solicitudes por estado");
+                    dataSet.setColors(
+                            Color.parseColor("#4CAF50"), // Verde - Aprobadas
+                            Color.parseColor("#F44336"), // Rojo - Rechazadas
+                            Color.parseColor("#FFC107")  // Amarillo - Pendientes
+                    );
+                    dataSet.setValueTextSize(14f);
+
+                    BarData barData = new BarData(dataSet);
+                    barChart.setData(barData);
+                    barChart.getDescription().setEnabled(false);
+                    barChart.getLegend().setEnabled(false);
+
+                    String[] labels = new String[]{"Aprobadas", "Rechazadas", "Pendientes"};
+                    XAxis xAxis = barChart.getXAxis();
+                    xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
+                    xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+                    xAxis.setGranularity(1f);
+                    xAxis.setLabelCount(labels.length);
+                    xAxis.setDrawGridLines(false);
+
+                    barChart.getAxisRight().setEnabled(false); // Ocultar eje derecho
+                    barChart.getAxisLeft().setGranularity(1f);
+                    barChart.getAxisLeft().setAxisMinimum(0f);
+
+                    barChart.animateY(1000);
+                    barChart.invalidate();
+
+                    // Mostrar solicitudes en RecyclerView
                     SolicitudAdapter adapter = new SolicitudAdapter(
                             solicitudes,
                             true,
                             (idSolicitud, nuevoEstatus) -> cambiarEstatus(idSolicitud, nuevoEstatus),
-                            idSolicitud -> eliminarSolicitud(idSolicitud)
+                            idSolicitud -> eliminarSolicitud(idSolicitud),
+                            solicitud -> { /* no hace nada al click */ }
                     );
 
                     recyclerView.setAdapter(adapter);
