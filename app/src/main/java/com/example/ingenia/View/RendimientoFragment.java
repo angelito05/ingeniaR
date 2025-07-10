@@ -97,8 +97,8 @@ public class RendimientoFragment extends Fragment {
 
     private void configurarSpinner() {
         String[] opciones = {"Todos", "Pendientes", "Aprobadas", "Rechazadas"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, opciones);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), R.layout.spinner_item, opciones);
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         spinnerFiltro.setAdapter(adapter);
 
         spinnerFiltro.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {

@@ -40,9 +40,24 @@
 
     <!-- Estilo para Spinner -->
     <style name="Widget.CrediGo.Spinner" parent="Widget.AppCompat.Spinner">
+        <!-- Fondo del Spinner -->
         <item name="android:background">@drawable/spinner_background</item>
+
+        <!-- Color del texto del ítem seleccionado -->
         <item name="android:textColor">@color/text_primary</item>
+
+        <!-- Fondo del popup desplegable -->
         <item name="android:popupBackground">@color/card_background</item>
+
+        <!-- Tamaño del texto para hacerlo más compacto -->
+        <item name="android:textSize">14sp</item>
+
+        <!-- Reducir el padding interno del spinner -->
+        <item name="android:padding">6dp</item>
+
+        <!-- Altura mínima del spinner -->
+        <item name="android:minHeight">40dp</item>
     </style>
+
 
 </resources>
