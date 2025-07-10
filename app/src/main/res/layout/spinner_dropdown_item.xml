@@ -4,5 +4,4 @@
     android:layout_height="wrap_content"
     android:padding="12dp"
     android:textColor="@color/text_primary"
-    android:background="@color/card_background"
     android:textSize="16sp" />
