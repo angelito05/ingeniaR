@@ -68,8 +68,8 @@ public class SolicitudesFragment extends Fragment {
     private void configurarSpinner() {
         String[] opciones = {"Todos", "Pendientes", "Aprobadas", "Rechazadas"};
 
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, opciones);
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(requireContext(), R.layout.spinner_item, opciones);
+        spinnerAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         spinnerFiltroAdmin.setAdapter(spinnerAdapter);
 
         spinnerFiltroAdmin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
