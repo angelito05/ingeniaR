@@ -162,26 +162,30 @@ public class RendimientoFragment extends Fragment {
         int pendientes = 0, aprobadas = 0, rechazadas = 0;
 
         for (SolicitudCredito s : listaCompletaSolicitudes) {
-            switch (s.id_estatus) {
-                case 1: pendientes++; break;
-                case 2: aprobadas++; break;
-                case 3: rechazadas++; break;
-            }
-
             if (filtroSeleccionado == 0 || // Todos
                     (filtroSeleccionado == 1 && s.id_estatus == 1) ||
                     (filtroSeleccionado == 2 && s.id_estatus == 2) ||
                     (filtroSeleccionado == 3 && s.id_estatus == 3)) {
                 filtradas.add(s);
+
+                // Contar solo los filtrados para el gráfico:
+                switch (s.id_estatus) {
+                    case 1: pendientes++; break;
+                    case 2: aprobadas++; break;
+                    case 3: rechazadas++; break;
+                }
             }
         }
 
+        // Actualiza el adapter con la lista filtrada
         if (adapter != null) {
             adapter.actualizarLista(filtradas);
         }
 
+        // Actualizar gráfico con los datos filtrados:
         actualizarGrafico(pendientes, aprobadas, rechazadas);
     }
+
 
     private void actualizarGrafico(int pendientes, int aprobadas, int rechazadas) {
         List<PieEntry> entries = new ArrayList<>();
