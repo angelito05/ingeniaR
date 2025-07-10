@@ -59,24 +59,23 @@ public class Empleados_Fragment extends Fragment {
         api.obtenerTodosLosUsuarios().enqueue(new Callback<List<User>>() {
             @Override
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
-                if (response.isSuccessful() && response.body() != null) {
+                if (!isAdded() || response.body() == null) return;
 
-                    listaUsuariosOriginal = new ArrayList<>(response.body());
-                    adapter = new UsuarioAdapter(requireContext(), new ArrayList<>(listaUsuariosOriginal)); // Siempre pasa una copia al adapter
-                    recyclerView.setAdapter(adapter);
-                    Log.d("API", "Usuarios recibidos: " + listaUsuariosOriginal.size());
+                listaUsuariosOriginal = new ArrayList<>(response.body());
+                adapter = new UsuarioAdapter(requireContext(), new ArrayList<>(listaUsuariosOriginal));
+                recyclerView.setAdapter(adapter);
+                Log.d("API", "Usuarios recibidos: " + listaUsuariosOriginal.size());
 
-
-                    configurarBusqueda();
-                } else {
-                    Toast.makeText(getContext(), "No se pudieron cargar los usuarios", Toast.LENGTH_SHORT).show();
-                }
+                configurarBusqueda();
             }
+
 
             @Override
             public void onFailure(Call<List<User>> call, Throwable t) {
-                Toast.makeText(getContext(), "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                if (!isAdded()) return;
+                Toast.makeText(requireContext(), "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
+
         });
     }
 

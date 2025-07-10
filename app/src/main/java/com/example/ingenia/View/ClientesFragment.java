@@ -91,12 +91,15 @@ public class ClientesFragment extends Fragment {
         service.getClientesPorUsuario(idUsuario).enqueue(new Callback<List<Cliente>>() {
             @Override
             public void onResponse(Call<List<Cliente>> call, Response<List<Cliente>> response) {
+                if (!isAdded()) return; // <- Protege contra fragmento destruido
+
                 if (response.isSuccessful() && response.body() != null) {
                     listaOriginal = response.body();
 
                     adapter = new ClienteAdapter(new ArrayList<>(listaOriginal), new ClienteAdapter.OnItemClickListener() {
                         @Override
                         public void onVerDetallesClicked(Cliente cliente) {
+                            if (!isAdded()) return;
                             DetalleClienteFragment fragment = new DetalleClienteFragment();
                             Bundle args = new Bundle();
                             args.putInt("id_cliente", cliente.idCliente);
@@ -111,25 +114,29 @@ public class ClientesFragment extends Fragment {
 
                         @Override
                         public void onAbrirSolicitudFinalClicked(Cliente cliente) {
+                            if (!isAdded()) return;
                             abrirSolicitudFinal(cliente.idCliente);
                         }
                     });
 
                     recyclerView.setAdapter(adapter);
-
                 } else {
-                    Toast.makeText(getContext(), "No se pudieron obtener los clientes", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "No se pudieron obtener los clientes", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<List<Cliente>> call, Throwable t) {
-                Toast.makeText(getContext(), "Error de conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                if (!isAdded()) return;
+                Toast.makeText(requireContext(), "Error de conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
 
+
     private void filtrarClientes(String texto) {
+        if (listaOriginal == null) return; //  Protección para evitar crash
+
         List<Cliente> filtrados = new ArrayList<>();
         for (Cliente cliente : listaOriginal) {
             if (cliente.nombre.toLowerCase().contains(texto.toLowerCase()) ||
@@ -143,12 +150,13 @@ public class ClientesFragment extends Fragment {
     }
 
 
-    private void abrirSolicitudFinal(int idCliente) {
-        SolicitudFinalFragment fragment = new SolicitudFinalFragment();
 
+    private void abrirSolicitudFinal(int idCliente) {
+        if (!isAdded()) return;
+
+        SolicitudFinalFragment fragment = new SolicitudFinalFragment();
         Bundle args = new Bundle();
         args.putInt("id_cliente", idCliente);
-
         fragment.setArguments(args);
 
         requireActivity().getSupportFragmentManager()
@@ -157,4 +165,5 @@ public class ClientesFragment extends Fragment {
                 .addToBackStack(null)
                 .commit();
     }
+
 }

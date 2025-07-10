@@ -47,8 +47,10 @@ public class admin extends AppCompatActivity {
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
 
-        // Cargar fragmento inicial (SolicitudesFragment)
-        loadFragment(new SolicitudesFragment());
+        if (savedInstanceState == null) {
+            loadFragment(new SolicitudesFragment());
+        }
+
 
         // Listener para seleccionar menú
         bottomNavigationView.setOnItemSelectedListener(item -> {

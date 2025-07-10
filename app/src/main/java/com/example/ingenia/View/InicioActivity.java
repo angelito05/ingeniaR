@@ -34,7 +34,9 @@ public class InicioActivity extends AppCompatActivity {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_nav);
 
         // Fragmento inicial
-        loadFragment(new RendimientoFragment());
+        if (savedInstanceState == null) {
+            loadFragment(new RendimientoFragment());
+        }
 
         // Listener de navegación
         bottomNavigationView.setOnItemSelectedListener(item -> {
