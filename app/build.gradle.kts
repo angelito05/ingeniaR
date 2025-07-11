@@ -48,6 +48,9 @@ dependencies {
     implementation(libs.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.camera.view)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

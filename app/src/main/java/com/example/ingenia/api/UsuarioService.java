@@ -18,6 +18,10 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Multipart;
+import retrofit2.http.Part;
+import okhttp3.MultipartBody;
+
 
 public interface UsuarioService {
     @POST("api/usuario/login")
@@ -55,9 +59,9 @@ public interface UsuarioService {
     Call<ResponseBody> eliminarSolicitud(@Path("id") int idSolicitud);
     @PUT("api/Solicitud/editar/{id}")
     Call<Object> editarSolicitud(@Path("id") int id, @Body SolicitudCredito solicitud);
-
-
-
+    @Multipart
+    @POST("api/OCR/ine")
+    Call<OcrResponse> enviarIne(@Part MultipartBody.Part archivoINE);
 
 
 }

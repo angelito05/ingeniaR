@@ -32,22 +32,28 @@ import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-//import com.example.ingenia.Model.CameraINEActivity;
 import com.example.ingenia.Model.ClienteRequest;
 import com.example.ingenia.Model.Cliente;
+import com.example.ingenia.Model.OcrResponse;
 import com.example.ingenia.R;
 import com.example.ingenia.api.ApiConfig;
 import com.example.ingenia.api.UsuarioService;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.Executor;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
 import okhttp3.logging.HttpLoggingInterceptor;
-import retrofit2.*;
-
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class CrearSolicitudFragment extends Fragment {
@@ -149,7 +155,6 @@ public class CrearSolicitudFragment extends Fragment {
         inputEstado.setText(args.getString("estado", ""));
         inputCp.setText(args.getString("codigo_postal", ""));
 
-
         // Poner campos en solo lectura (deshabilitados y fondo gris claro)
         ponerCamposSoloLectura(
                 inputNombre, inputApellidoPaterno, inputApellidoMaterno,
@@ -164,7 +169,7 @@ public class CrearSolicitudFragment extends Fragment {
         btnSolicitar.setVisibility(View.VISIBLE);
         btnSolicitar.setEnabled(true);
 
-// Nueva funcionalidad: ir directo a SolicitudFinalFragment con el id_cliente
+        // Nueva funcionalidad: ir directo a SolicitudFinalFragment con el id_cliente
         btnSolicitar.setOnClickListener(v -> {
             int idCliente = args.getInt("id_cliente", -1);
             if (idCliente == -1) {
@@ -185,7 +190,6 @@ public class CrearSolicitudFragment extends Fragment {
             transaction.addToBackStack(null);
             transaction.commit();
         });
-
 
         // Ocultar etiquetas de validación
         labelCurpValida.setVisibility(View.GONE);
@@ -413,7 +417,7 @@ public class CrearSolicitudFragment extends Fragment {
         if (imageCapture == null) return;
 
         // Crear archivo en almacenamiento interno privado
-        File photoFile = new File(requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+        photoFile = new File(requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES),
                 "INE_" + System.currentTimeMillis() + ".jpg");
 
         ImageCapture.OutputFileOptions outputOptions =
@@ -442,6 +446,9 @@ public class CrearSolicitudFragment extends Fragment {
                             isCameraActive = false;
 
                             Toast.makeText(requireContext(), "Foto guardada", Toast.LENGTH_SHORT).show();
+
+                            // ¡Aquí llamamos al método para enviar la foto al backend y obtener datos!
+                            enviarFotoAlBackend(photoFile);
                         });
                     }
 
@@ -454,6 +461,65 @@ public class CrearSolicitudFragment extends Fragment {
                 }
         );
     }
+
+    private void enviarFotoAlBackend(File photoFile) {
+        // Crear MultipartBody.Part
+        RequestBody requestFile = RequestBody.create(photoFile, MediaType.parse("image/jpeg"));
+        MultipartBody.Part body = MultipartBody.Part.createFormData("archivoINE", photoFile.getName(), requestFile);
+
+
+        // Retrofit con logging (puedes reutilizar el cliente si quieres)
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(logging)
+                .build();
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(ApiConfig.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
+                .build();
+
+        UsuarioService service = retrofit.create(UsuarioService.class);
+
+        service.enviarIne(body).enqueue(new Callback<OcrResponse>() {
+            @Override
+            public void onResponse(Call<OcrResponse> call, Response<OcrResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    OcrResponse datos = response.body();
+
+                    // Llenar campos con datos recibidos
+                    inputNombre.setText(datos.nombre);
+                    inputApellidoPaterno.setText("");
+                    inputApellidoMaterno.setText("");
+                    inputCurp.setText(datos.curp);
+                    inputClaveElector.setText(datos.clave_elector);
+                    inputFechaNacimiento.setText(datos.fecha_nacimiento);
+                    inputGenero.setText(datos.sexo);
+                    inputColonia.setText(datos.seccion);
+                    inputCalle.setText(datos.localidad);
+                    inputCiudad.setText(datos.municipio);
+                    inputEstado.setText(datos.estado);
+                    inputCp.setText("");
+
+                    labelIneValida.setText("INE escaneada correctamente");
+                    labelIneValida.setTextColor(requireContext().getColor(android.R.color.holo_green_dark));
+                } else {
+                    Toast.makeText(getContext(), "Error al procesar INE", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<OcrResponse> call, Throwable t) {
+                Toast.makeText(getContext(), "Falla al conectar OCR: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+
+
 
     // Configurar el launcher para la actividad de la cámara
     @Override
