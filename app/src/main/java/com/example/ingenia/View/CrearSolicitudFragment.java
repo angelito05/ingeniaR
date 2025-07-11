@@ -3,10 +3,12 @@ package com.example.ingenia.View;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -72,6 +74,38 @@ public class CrearSolicitudFragment extends Fragment {
     private ImageView ineFrame;
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<String> permissionLauncher;
+    // Configurar el launcher para la actividad de la cámara
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Registrar launcher para solicitar permiso de cámara
+        permissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        toggleCameraView();  // Abrir cámara si se concedió el permiso
+                    } else {
+                        Toast.makeText(getContext(), "Permiso de cámara denegado", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+
+        // (opcional) Tu cameraLauncher de OCR si lo usas
+        cameraLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        String uriString = result.getData().getStringExtra("photoUri");
+                        if (uriString != null) {
+                            photoUri = Uri.parse(uriString);
+                            imagenPreviewINE.setImageURI(photoUri);
+                        }
+                    }
+                }
+        );
+    }
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -117,8 +151,22 @@ public class CrearSolicitudFragment extends Fragment {
         cameraExecutor = ContextCompat.getMainExecutor(requireContext());
 
         // Configurar listeners
-        btnEscanear.setOnClickListener(v -> toggleCameraView());
         btnCapture.setOnClickListener(v -> takePhoto());
+        btnEscanear.setOnClickListener(v -> {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                // Siempre pedimos el permiso (ya sea primera vez o si no marcó "No volver a preguntar")
+                permissionLauncher.launch(Manifest.permission.CAMERA);
+
+            } else {
+                // Permiso ya concedido, abrir cámara
+                toggleCameraView();
+            }
+        });
+
+
+
 
         // Ajustar tamaño del marco según la pantalla
         ajustarTamanioMarco();
@@ -134,6 +182,20 @@ public class CrearSolicitudFragment extends Fragment {
 
         return view;
     }
+    private void mostrarDialogoIrAConfiguracion() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Permiso necesario")
+                .setMessage("Para usar la cámara, otorga permiso en Ajustes.")
+                .setPositiveButton("Abrir Ajustes", (dialog, which) -> {
+                    Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    Uri uri = Uri.fromParts("package", requireContext().getPackageName(), null);
+                    intent.setData(uri);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
 
     private void cargarDatosModoLectura(Bundle args) {
         inputNombre.setText(args.getString("nombre", ""));
@@ -240,7 +302,19 @@ public class CrearSolicitudFragment extends Fragment {
                 }
         );
 
-        btnEscanear.setOnClickListener(v -> toggleCameraView());
+        // PERMISO Y BOTÓN ESCANEAR
+        btnEscanear.setOnClickListener(v -> {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                // Siempre pedimos el permiso (ya sea primera vez o si no marcó "No volver a preguntar")
+                permissionLauncher.launch(Manifest.permission.CAMERA);
+
+            } else {
+                // Permiso ya concedido, abrir cámara
+                toggleCameraView();
+            }
+        });
 
         btnValidar.setOnClickListener(v -> simularValidacionDatos());
 
@@ -450,25 +524,6 @@ public class CrearSolicitudFragment extends Fragment {
                         Log.e("CameraFragment", "Error de captura: " + exception.getMessage());
                         requireActivity().runOnUiThread(() ->
                                 Toast.makeText(requireContext(), "Error al capturar foto", Toast.LENGTH_SHORT).show());
-                    }
-                }
-        );
-    }
-
-    // Configurar el launcher para la actividad de la cámara
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        cameraLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                        String uriString = result.getData().getStringExtra("photoUri");
-                        if (uriString != null) {
-                            photoUri = Uri.parse(uriString);
-                            imagenPreviewINE.setImageURI(photoUri);
-                        }
                     }
                 }
         );
