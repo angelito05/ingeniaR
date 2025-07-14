@@ -7,6 +7,7 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -78,6 +79,9 @@ public class CrearSolicitudFragment extends Fragment {
     private ImageView ineFrame;
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<String> permissionLauncher;
+    private ImageButton btnFlashToggle;
+    private boolean isFlashEnabled = true;   // estado global del flash
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -118,6 +122,10 @@ public class CrearSolicitudFragment extends Fragment {
 
         previewView = view.findViewById(R.id.camera_preview);
         btnCapture = view.findViewById(R.id.btn_capture);
+
+        btnFlashToggle = view.findViewById(R.id.btn_flash_toggle);
+        btnFlashToggle.setOnClickListener(v -> toggleFlash());
+
 
         // Inicializar ejecutor para la cámara
         cameraExecutor = ContextCompat.getMainExecutor(requireContext());
@@ -203,6 +211,20 @@ public class CrearSolicitudFragment extends Fragment {
             campo.setTextColor(requireContext().getColor(android.R.color.black));
         }
     }
+    private void toggleFlash() {
+        isFlashEnabled = !isFlashEnabled;
+
+        // Cambia icono
+        btnFlashToggle.setImageResource(
+                isFlashEnabled ? R.drawable.ic_flash_on : R.drawable.ic_flash_off);
+
+        // Si la cámara ya está activa, actualiza el modo de flash
+        if (imageCapture != null) {
+            imageCapture.setFlashMode(
+                    isFlashEnabled ? ImageCapture.FLASH_MODE_ON : ImageCapture.FLASH_MODE_OFF);
+        }
+    }
+
 
     private void configurarModoEdicion() {
         datosValidados = false;
@@ -244,7 +266,19 @@ public class CrearSolicitudFragment extends Fragment {
                 }
         );
 
-        btnEscanear.setOnClickListener(v -> toggleCameraView());
+        btnEscanear.setOnClickListener(v -> {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                // Siempre pedimos el permiso (ya sea primera vez o si no marcó "No volver a preguntar")
+                permissionLauncher.launch(Manifest.permission.CAMERA);
+
+            } else {
+                // Permiso ya concedido, abrir cámara
+                toggleCameraView();
+            }
+        });
+
 
         btnValidar.setOnClickListener(v -> simularValidacionDatos());
 
@@ -395,6 +429,9 @@ public class CrearSolicitudFragment extends Fragment {
 
                 imageCapture = new ImageCapture.Builder()
                         .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                        .setFlashMode(isFlashEnabled ?    // << usa la variable global
+                                ImageCapture.FLASH_MODE_ON :
+                                ImageCapture.FLASH_MODE_OFF)
                         .build();
 
                 CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
