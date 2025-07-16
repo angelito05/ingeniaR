@@ -49,20 +49,14 @@
             android:layout_height="wrap_content" />
 
         <EditText
-            android:id="@+id/etCalle"
-            android:hint="Calle"
+            android:id="@+id/etDomicilio"
+            android:hint="Domicilio"
             android:minHeight="48dp"
             android:padding="12dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <EditText
-            android:id="@+id/etColonia"
-            android:hint="Colonia"
-            android:minHeight="48dp"
-            android:padding="12dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+
 
         <EditText
             android:id="@+id/etCiudad"

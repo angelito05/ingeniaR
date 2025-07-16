@@ -22,7 +22,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class DetalleClienteFragment extends Fragment {
 
     private EditText etNombre, etApellidoPaterno, etApellidoMaterno, etCurp, etClaveElector;
-    private EditText etCalle, etColonia, etCiudad, etEstado, etCodigoPostal, etGenero;
+    private EditText etDomicilio,  etCiudad, etEstado, etCodigoPostal, etGenero;
     private Button btnGuardar, btnEliminar, btnValidar;
     private int idCliente;
 
@@ -46,8 +46,7 @@ public class DetalleClienteFragment extends Fragment {
         etCurp = view.findViewById(R.id.etCurp);
         etClaveElector = view.findViewById(R.id.etClaveElector);
 
-        etCalle = view.findViewById(R.id.etCalle);
-        etColonia = view.findViewById(R.id.etColonia);
+        etDomicilio = view.findViewById(R.id.etDomicilio);
         etCiudad = view.findViewById(R.id.etCiudad);
         etEstado = view.findViewById(R.id.etEstado);
         etCodigoPostal = view.findViewById(R.id.etCodigoPostal);
@@ -96,8 +95,7 @@ public class DetalleClienteFragment extends Fragment {
                     etCurp.setText(cliente.curp);
                     etClaveElector.setText(cliente.clave_elector);
 
-                    etCalle.setText(cliente.calle);
-                    etColonia.setText(cliente.colonia);
+                    etDomicilio.setText(cliente.domicilio);
                     etCiudad.setText(cliente.ciudad);
                     etEstado.setText(cliente.estado);
                     etCodigoPostal.setText(cliente.codigo_postal);
@@ -123,8 +121,7 @@ public class DetalleClienteFragment extends Fragment {
         actualizado.curp = etCurp.getText().toString();
         actualizado.clave_elector = etClaveElector.getText().toString();
 
-        actualizado.calle = etCalle.getText().toString();
-        actualizado.colonia = etColonia.getText().toString();
+        actualizado.domicilio = etDomicilio.getText().toString();
         actualizado.ciudad = etCiudad.getText().toString();
         actualizado.estado = etEstado.getText().toString();
         actualizado.codigo_postal = etCodigoPostal.getText().toString();
