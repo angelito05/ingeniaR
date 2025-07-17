@@ -13,8 +13,7 @@ public class Cliente {
     public String clave_elector;
     public String fecha_nacimiento;
     public String genero;
-    public String calle;
-    public String colonia;
+    public String domicilio;
     public String ciudad;
     public String estado;
     public String codigo_postal;

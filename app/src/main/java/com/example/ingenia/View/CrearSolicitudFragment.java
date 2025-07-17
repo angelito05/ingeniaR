@@ -70,7 +70,7 @@ public class CrearSolicitudFragment extends Fragment {
 
     private EditText inputNombre, inputApellidoPaterno, inputApellidoMaterno;
     private EditText inputCurp, inputClaveElector, inputFechaNacimiento, inputGenero;
-    private EditText inputColonia, inputCalle, inputCiudad, inputEstado, inputCp;
+    private EditText inputDomicilio, inputCiudad, inputEstado, inputCp;
     private TextView labelCurpValida, labelIneValida;
     private Button btnEscanear, btnValidar, btnSolicitar;
     private static final int REQUEST_CAMERA_PERMISSION = 100;
@@ -107,8 +107,7 @@ public class CrearSolicitudFragment extends Fragment {
         inputClaveElector = view.findViewById(R.id.input_clave_elector);
         inputFechaNacimiento = view.findViewById(R.id.input_fecha_nacimiento);
         inputGenero = view.findViewById(R.id.input_genero);
-        inputColonia = view.findViewById(R.id.input_colonia);
-        inputCalle = view.findViewById(R.id.input_calle);
+        inputDomicilio = view.findViewById(R.id.input_domicilio);
         inputCiudad = view.findViewById(R.id.input_ciudad);
         inputEstado = view.findViewById(R.id.input_estado);
         inputCp = view.findViewById(R.id.input_cp);
@@ -129,7 +128,7 @@ public class CrearSolicitudFragment extends Fragment {
 
 
         btnEscanear = view.findViewById(R.id.btn_escanear_ine);
-        imagenPreviewINE = view.findViewById(R.id.imagen_ine); // <-- Debes tener un ImageView en tu layout
+        imagenPreviewINE = view.findViewById(R.id.imagen_ine);
 
         previewView = view.findViewById(R.id.camera_preview);
         btnCapture = view.findViewById(R.id.btn_capture);
@@ -168,8 +167,7 @@ public class CrearSolicitudFragment extends Fragment {
         inputClaveElector.setText(args.getString("clave_elector", ""));
         inputFechaNacimiento.setText(args.getString("fecha_nacimiento", ""));
         inputGenero.setText(args.getString("genero", ""));
-        inputColonia.setText(args.getString("colonia", ""));
-        inputCalle.setText(args.getString("calle", ""));
+        inputDomicilio.setText(args.getString("domicilio", ""));
         inputCiudad.setText(args.getString("ciudad", ""));
         inputEstado.setText(args.getString("estado", ""));
         inputCp.setText(args.getString("codigo_postal", ""));
@@ -178,7 +176,7 @@ public class CrearSolicitudFragment extends Fragment {
         ponerCamposSoloLectura(
                 inputNombre, inputApellidoPaterno, inputApellidoMaterno,
                 inputCurp, inputClaveElector, inputFechaNacimiento,
-                inputGenero, inputColonia, inputCalle, inputCiudad,
+                inputGenero, inputDomicilio, inputCiudad,
                 inputEstado, inputCp
         );
 
@@ -188,7 +186,7 @@ public class CrearSolicitudFragment extends Fragment {
         btnSolicitar.setVisibility(View.VISIBLE);
         btnSolicitar.setEnabled(true);
 
-        // Nueva funcionalidad: ir directo a SolicitudFinalFragment con el id_cliente
+        // ir directo a SolicitudFinalFragment con el id_cliente
         btnSolicitar.setOnClickListener(v -> {
             int idCliente = args.getInt("id_cliente", -1);
             if (idCliente == -1) {
@@ -422,16 +420,29 @@ public class CrearSolicitudFragment extends Fragment {
         String apellidoM = inputApellidoMaterno.getText().toString().trim();
         String curp = inputCurp.getText().toString().trim();
         String claveElector = inputClaveElector.getText().toString().trim();
-        String fechaNacimiento = inputFechaNacimiento.getText().toString().trim();
+        String fechaNacimientoRaw = inputFechaNacimiento.getText().toString().trim();
         String genero = inputGenero.getText().toString().trim();
-        String calle = inputCalle.getText().toString().trim();
-        String colonia = inputColonia.getText().toString().trim();
+        String domicilio = inputDomicilio.getText().toString().trim();
         String ciudad = inputCiudad.getText().toString().trim();
         String estado = inputEstado.getText().toString().trim();
         String codigoPostal = inputCp.getText().toString().trim();
 
         if (nombre.isEmpty() || curp.isEmpty()) {
             Toast.makeText(getContext(), "Nombre y CURP son obligatorios", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Convertir fecha a formato ISO yyyy-MM-dd
+        String fechaNacimiento = fechaNacimientoRaw;
+        try {
+            if (fechaNacimientoRaw.contains("/")) {
+                java.text.SimpleDateFormat formatoEntrada = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                java.text.SimpleDateFormat formatoSalida = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                fechaNacimiento = formatoSalida.format(formatoEntrada.parse(fechaNacimientoRaw));
+            }
+        } catch (java.text.ParseException e) {
+            e.printStackTrace();
+            Toast.makeText(getContext(), "Formato de fecha inválido. Use dd/MM/yyyy o yyyy-MM-dd", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -456,8 +467,7 @@ public class CrearSolicitudFragment extends Fragment {
                 claveElector,
                 fechaNacimiento,
                 genero,
-                calle,
-                colonia,
+                domicilio,
                 ciudad,
                 estado,
                 codigoPostal,
@@ -511,6 +521,7 @@ public class CrearSolicitudFragment extends Fragment {
             }
         });
     }
+
     private void ajustarTamanioMarco() {
         // Obtener dimensiones de la pantalla
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -654,21 +665,21 @@ public class CrearSolicitudFragment extends Fragment {
             @Override
             public void onResponse(Call<OcrResponse> call, Response<OcrResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
+
                     OcrResponse datos = response.body();
 
                     // Llenar campos con datos recibidos
                     inputNombre.setText(datos.nombre);
-                    inputApellidoPaterno.setText("");
-                    inputApellidoMaterno.setText("");
+                    inputApellidoPaterno.setText(datos.apellido_paterno);
+                    inputApellidoMaterno.setText(datos.apellido_materno);
                     inputCurp.setText(datos.curp);
                     inputClaveElector.setText(datos.clave_elector);
                     inputFechaNacimiento.setText(datos.fecha_nacimiento);
                     inputGenero.setText(datos.sexo);
-                    inputColonia.setText(datos.seccion);
-                    inputCalle.setText(datos.localidad);
+                    inputDomicilio.setText(datos.domicilio);
                     inputCiudad.setText(datos.municipio);
                     inputEstado.setText(datos.estado);
-                    inputCp.setText("");
+                    inputCp.setText(datos.codigo_postal);
 
                     labelIneValida.setText("INE escaneada correctamente");
                     labelIneValida.setTextColor(requireContext().getColor(android.R.color.holo_green_dark));
@@ -714,8 +725,7 @@ public class CrearSolicitudFragment extends Fragment {
         inputClaveElector.setText("BELR920101");
         inputFechaNacimiento.setText("1992-01-01");
         inputGenero.setText("Femenino");
-        inputColonia.setText("Norte");
-        inputCalle.setText("Av. Insurgentes");
+        inputDomicilio.setText("Av. Insurgentes");
         inputCiudad.setText("CDMX");
         inputEstado.setText("Ciudad de México");
         inputCp.setText("06000");
@@ -756,8 +766,7 @@ public class CrearSolicitudFragment extends Fragment {
         inputClaveElector.setText("");
         inputFechaNacimiento.setText("");
         inputGenero.setText("");
-        inputColonia.setText("");
-        inputCalle.setText("");
+        inputDomicilio.setText("");
         inputCiudad.setText("");
         inputEstado.setText("");
         inputCp.setText("");

@@ -151,24 +151,16 @@
             android:layout_marginBottom="24dp"/>
 
         <EditText
-            android:id="@+id/input_calle"
+            android:id="@+id/input_domicilio"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
             android:padding="12dp"
-            android:hint="Calle"
+            android:hint="Domicilio"
             android:inputType="text"
             android:layout_marginBottom="12dp"/>
 
-        <EditText
-            android:id="@+id/input_colonia"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:padding="12dp"
-            android:hint="Colonia"
-            android:inputType="text"
-            android:layout_marginBottom="12dp"/>
+
 
         <EditText
             android:id="@+id/input_ciudad"
