@@ -11,6 +11,7 @@ import com.example.ingenia.Model.*;
 import com.example.ingenia.Model.UsuarioActualizarDTO;
 
 import retrofit2.Call;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
@@ -62,6 +63,26 @@ public interface UsuarioService {
     @Multipart
     @POST("api/OCR/ine")
     Call<OcrResponse> enviarIne(@Part MultipartBody.Part archivoINE);
+
+    @Multipart
+    @POST("api/Verificamex/validar-y-guardar")
+    Call<Cliente> validarYGuardarCliente(
+            @Part("Nombre") RequestBody nombre,
+            @Part("Apellido_paterno") RequestBody apellidoPaterno,
+            @Part("Apellido_materno") RequestBody apellidoMaterno,
+            @Part("Curp") RequestBody curp,
+            @Part("Clave_elector") RequestBody claveElector,
+            @Part("Fecha_nacimiento") RequestBody fechaNacimiento,
+            @Part("Genero") RequestBody genero,
+            @Part("Domicilio") RequestBody domicilio,
+            @Part("Ciudad") RequestBody ciudad,
+            @Part("Estado") RequestBody estado,
+            @Part("Codigo_postal") RequestBody codigoPostal,
+            @Part("Id_usuario") RequestBody idUsuario,
+            @Part MultipartBody.Part ArchivoINE
+    );
+
+
 
 
 }

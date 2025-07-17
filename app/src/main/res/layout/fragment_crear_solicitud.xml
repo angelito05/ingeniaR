@@ -221,7 +221,7 @@
             android:layout_height="wrap_content"
             style="@style/Widget.CrediGo.Button"
 
-            android:text="Solicitar credito"
+            android:text="Limpiar Formulario"
             android:enabled="false" />
 
     </LinearLayout>
