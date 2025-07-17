@@ -1,5 +1,7 @@
 package com.example.ingenia.View;
 
+import static com.example.ingenia.api.ApiConfig.BASE_URL;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -36,10 +38,16 @@ import androidx.fragment.app.FragmentTransaction;
 import com.example.ingenia.Model.ClienteRequest;
 import com.example.ingenia.Model.Cliente;
 import com.example.ingenia.Model.OcrResponse;
+import com.example.ingenia.Model.RenapoRequest;
+import com.example.ingenia.Model.VerificamexResponse;
 import com.example.ingenia.R;
 import com.example.ingenia.api.ApiConfig;
 import com.example.ingenia.api.UsuarioService;
+import com.example.ingenia.api.VerificamexService;
+import com.example.ingenia.databinding.FragmentCrearSolicitudBinding;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -49,6 +57,7 @@ import java.util.concurrent.Executor;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
@@ -80,8 +89,10 @@ public class CrearSolicitudFragment extends Fragment {
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<String> permissionLauncher;
     private ImageButton btnFlashToggle;
-    private boolean isFlashEnabled = true;   // estado global del flash
-
+    private boolean isFlashEnabled = true;
+    // estado global del flash
+    private FragmentCrearSolicitudBinding binding;
+    private boolean curpValida = false;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -279,11 +290,126 @@ public class CrearSolicitudFragment extends Fragment {
             }
         });
 
+        btnValidar.setOnClickListener(v -> {
+            String curp = inputCurp.getText().toString().trim();
+            if (!curp.isEmpty()) {
+                verificarCurp(curp);
+            } else {
+                mostrarMensajeValidacion("Por favor ingresa una CURP.", false);
+            }
+        });
+        //btnValidar.setOnClickListener(v -> simularValidacionDatos());
 
-        btnValidar.setOnClickListener(v -> simularValidacionDatos());
-
-        btnSolicitar.setOnClickListener(v -> crearCliente());
+        btnSolicitar.setOnClickListener(v -> {
+            if (curpValida) {
+                crearCliente();
+            } else {
+                mostrarMensajeValidacion("Debes verificar una CURP válida antes de continuar.", false);
+            }
+        });
     }
+
+
+    private void verificarCurp(String curp) {
+        VerificamexService service = ApiConfig.getRetrofit().create(VerificamexService.class);
+
+        JsonObject json = new JsonObject();
+        json.addProperty("curp", curp);
+
+        Call<Void> call = service.enviarCURP(json);
+
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                try {
+                    String mensaje;
+                    boolean esValido = false;
+
+                    if (response.isSuccessful()) {
+                        mensaje = "CURP válida";
+                        esValido = true;
+                    } else {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
+                        JsonParser parser = new JsonParser();
+                        JsonObject errorJson = parser.parse(errorBody).getAsJsonObject();
+                        mensaje = errorJson.has("mensaje") ? errorJson.get("mensaje").getAsString() : "CURP inválida";
+                    }
+
+                    curpValida = esValido;
+                    mostrarMensajeValidacion(mensaje, esValido);
+                } catch (Exception e) {
+                    curpValida = false;
+                    mostrarMensajeValidacion("Error procesando respuesta del servidor", false);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                curpValida = false;
+                mostrarMensajeValidacion("Error de conexión: " + t.getMessage(), false);
+                Log.e("API_ERROR", "Fallo al conectar con la API", t);
+            }
+        });
+    }
+
+
+
+    private void mostrarMensajeValidacion(String mensaje, boolean esValido) {
+        labelCurpValida.setText(mensaje);
+        labelCurpValida.setTextColor(
+                ContextCompat.getColor(requireContext(), esValido ? android.R.color.holo_green_dark : android.R.color.holo_red_dark)
+        );
+        labelCurpValida.setVisibility(View.VISIBLE);
+    }
+
+
+    private void enviarCURPaAPI(String curp) {
+
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(logging)
+                .addInterceptor(chain -> {
+                    Request original = chain.request();
+                    Request request = original.newBuilder()
+                            .header("Content-Type", "application/json")
+                            .method(original.method(), original.body())
+                            .build();
+                    return chain.proceed(request);
+                })
+                .build();
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(client)
+                .build();
+
+        // Interfaz para el servicio (personalizable)
+        VerificamexService service = retrofit.create(VerificamexService.class);
+
+        // Crear objeto de solicitud (personalizable según API)
+        JsonObject requestBody = new JsonObject();
+        requestBody.addProperty("curp", curp);
+
+        service.enviarCURP(requestBody).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.d("ENVIO_CURP", "CURP enviada exitosamente");
+                } else {
+                    Log.e("ENVIO_CURP", "Error en API: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e("ENVIO_CURP", "Fallo en conexión: " + t.getMessage());
+            }
+        });
+    }
+
 
     private void crearCliente() {
         if (!datosValidados) {
@@ -318,6 +444,8 @@ public class CrearSolicitudFragment extends Fragment {
             return;
         }
 
+        enviarCURPaAPI(curp);
+
         Log.d("ID_USUARIO_LOGEADO", "ID: " + idUsuario);
 
         ClienteRequest request = new ClienteRequest(
@@ -341,7 +469,7 @@ public class CrearSolicitudFragment extends Fragment {
         OkHttpClient client = new OkHttpClient.Builder().addInterceptor(logging).build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(ApiConfig.BASE_URL)
+                .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(client)
                 .build();
@@ -428,8 +556,9 @@ public class CrearSolicitudFragment extends Fragment {
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
                 imageCapture = new ImageCapture.Builder()
-                        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-                        .setFlashMode(isFlashEnabled ?    // << usa la variable global
+                        .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
+                        .setJpegQuality(90) // Mayor calidad para OCR
+                        .setFlashMode(isFlashEnabled ?
                                 ImageCapture.FLASH_MODE_ON :
                                 ImageCapture.FLASH_MODE_OFF)
                         .build();
@@ -514,7 +643,7 @@ public class CrearSolicitudFragment extends Fragment {
                 .build();
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(ApiConfig.BASE_URL)
+                .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(client)
                 .build();
@@ -595,6 +724,18 @@ public class CrearSolicitudFragment extends Fragment {
     }
 
     private void simularValidacionDatos() {
+        // Obtener la CURP del campo de texto
+        String curp = inputCurp.getText().toString().trim();
+
+        // Verificar que la CURP no esté vacía
+        if (!curp.isEmpty()) {
+            // Enviar la CURP a la API
+            enviarCURPaAPI(curp);
+        } else {
+            Log.e("ENVIO_CURP", "CURP vacía, no se puede enviar");
+        }
+
+        // Resto de la lógica existente de validación
         labelCurpValida.setText("CURP: VÁLIDA");
         labelCurpValida.setTextColor(requireContext().getColor(android.R.color.holo_green_dark));
 
