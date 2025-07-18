@@ -30,7 +30,7 @@ constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayo
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "gson" }
 camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "cameraView" }
-
+gson = "com.google.code.gson:gson:2.13.1"
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 
