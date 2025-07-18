@@ -25,9 +25,10 @@
             android:id="@+id/textoCarga"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Verificando CURP..."
+            android:text="@string/texto_cargando"
             android:textColor="@color/text_primary"
             android:textSize="18sp"
             android:layout_marginTop="16dp"/>
+
     </LinearLayout>
 </FrameLayout>

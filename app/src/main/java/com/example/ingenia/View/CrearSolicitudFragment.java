@@ -331,6 +331,18 @@ public class CrearSolicitudFragment extends Fragment {
             }
         }, cameraExecutor);
     }
+    LoadingDialogFragment dialogCarga;
+    private void mostrarPantallaCarga() {
+        dialogCarga = new LoadingDialogFragment("Verificando CURP...");
+        dialogCarga.setCancelable(false);
+        dialogCarga.show(getParentFragmentManager(), "loading");
+    }
+
+    private void ocultarPantallaCarga() {
+        if (dialogCarga != null && dialogCarga.isVisible()) {
+            dialogCarga.dismiss();
+        }
+    }
 
     private void takePhoto() {
         if (imageCapture == null) return;
@@ -376,16 +388,19 @@ public class CrearSolicitudFragment extends Fragment {
     }
 
     private void enviarFotoAlBackend(File photoFile) {
+        mostrarPantallaCarga(); // Mostrar loading antes de iniciar la llamada
+
         RequestBody requestFile = RequestBody.create(photoFile, MediaType.parse("image/jpeg"));
         MultipartBody.Part body = MultipartBody.Part.createFormData("archivoINE", photoFile.getName(), requestFile);
 
-        // Usar Retrofit configurado con timeout y logging desde ApiConfig
         Retrofit retrofit = ApiConfig.getRetrofit();
         UsuarioService service = retrofit.create(UsuarioService.class);
 
         service.enviarIne(body).enqueue(new Callback<OcrResponse>() {
             @Override
             public void onResponse(Call<OcrResponse> call, Response<OcrResponse> response) {
+                ocultarPantallaCarga(); // Ocultar loading cuando termina la llamada
+
                 if (response.isSuccessful() && response.body() != null) {
                     OcrResponse datos = response.body();
 
@@ -401,7 +416,7 @@ public class CrearSolicitudFragment extends Fragment {
                     inputEstado.setText(datos.estado);
                     inputCp.setText(datos.codigo_postal);
 
-                    labelIneValida.setText("INE escaneada correctamente");
+                    labelIneValida.setText("INE ESCANEADA CORRECTAMENTE");
                     labelIneValida.setTextColor(requireContext().getColor(android.R.color.holo_green_dark));
                 } else {
                     Toast.makeText(getContext(), "Error al procesar INE", Toast.LENGTH_SHORT).show();
@@ -410,11 +425,11 @@ public class CrearSolicitudFragment extends Fragment {
 
             @Override
             public void onFailure(Call<OcrResponse> call, Throwable t) {
+                ocultarPantallaCarga(); // Asegurar que se oculta aunque falle
                 Toast.makeText(getContext(), "Falla al conectar OCR: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
-
 
 
 
@@ -445,7 +460,8 @@ public class CrearSolicitudFragment extends Fragment {
             Toast.makeText(getContext(), "Validando y creando cliente...", Toast.LENGTH_SHORT).show();
         }
 
-        // Aquí llamamos el mismo método que validarYGuardarCliente pero adaptado para redirigir y mostrar Toast con id
+        mostrarPantallaCarga(); // ⏳ Mostrar diálogo de carga
+
         String nombre = inputNombre.getText().toString().trim();
         String apellidoP = inputApellidoPaterno.getText().toString().trim();
         String apellidoM = inputApellidoMaterno.getText().toString().trim();
@@ -459,12 +475,14 @@ public class CrearSolicitudFragment extends Fragment {
         String codigoPostal = inputCp.getText().toString().trim();
 
         if (nombre.isEmpty() || curp.isEmpty() || photoFile == null) {
+            ocultarPantallaCarga(); // ❌ Ocultar si hay error temprano
             Toast.makeText(getContext(), "Datos incompletos o INE no capturado", Toast.LENGTH_SHORT).show();
             return;
         }
 
         int idUsuario = obtenerIdUsuario();
         if (idUsuario == -1) {
+            ocultarPantallaCarga();
             Toast.makeText(getContext(), "Error: no se encontró el usuario logeado", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -488,7 +506,6 @@ public class CrearSolicitudFragment extends Fragment {
         Retrofit retrofit = ApiConfig.getRetrofit();
         UsuarioService service = retrofit.create(UsuarioService.class);
 
-
         Call<Cliente> call = service.validarYGuardarCliente(
                 nombrePart,
                 apellidoPPart,
@@ -508,6 +525,8 @@ public class CrearSolicitudFragment extends Fragment {
         call.enqueue(new Callback<Cliente>() {
             @Override
             public void onResponse(Call<Cliente> call, Response<Cliente> response) {
+                ocultarPantallaCarga(); // ✅ Ocultar al terminar
+
                 if (response.isSuccessful() && response.body() != null) {
                     Cliente clienteCreado = response.body();
                     int idCliente = clienteCreado.idCliente;
@@ -526,7 +545,6 @@ public class CrearSolicitudFragment extends Fragment {
                             .replace(R.id.container_fragment, solicitudFinalFragment)
                             .addToBackStack(null)
                             .commit();
-
                 } else {
                     Toast.makeText(getContext(), "Error al crear cliente", Toast.LENGTH_SHORT).show();
                     Log.e("CrearSolicitud", "Error: " + response.errorBody());
@@ -535,10 +553,12 @@ public class CrearSolicitudFragment extends Fragment {
 
             @Override
             public void onFailure(Call<Cliente> call, Throwable t) {
+                ocultarPantallaCarga(); // ✅ También ocultar si hay error
                 Toast.makeText(getContext(), "Falla en conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
+
 
 
     private void limpiarFormulario() {
