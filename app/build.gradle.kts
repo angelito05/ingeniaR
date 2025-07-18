@@ -50,7 +50,9 @@ dependencies {
     implementation(libs.camera.view)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
+    implementation(libs.gson)
 
+    implementation("com.airbnb.android:lottie:6.4.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

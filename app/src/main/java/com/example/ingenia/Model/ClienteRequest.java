@@ -14,13 +14,14 @@ public class ClienteRequest {
     public String estado;
     public String codigo_postal;
     public int id_usuario;  // nuevo campo
+    public boolean Cliente_Verificado;
 
     public ClienteRequest() {}
 
     public ClienteRequest(String nombre, String apellido_paterno, String apellido_materno, String curp,
                           String clave_elector, String fecha_nacimiento, String genero,
                           String domicilio, String ciudad, String estado, String codigo_postal,
-                          int id_usuario) {
+                          int id_usuario, boolean Cliente_Verificado) {
         this.nombre = nombre;
         this.apellido_paterno = apellido_paterno;
         this.apellido_materno = apellido_materno;
@@ -34,5 +35,6 @@ public class ClienteRequest {
         this.estado = estado;
         this.codigo_postal = codigo_postal;
         this.id_usuario = id_usuario;
+        this.Cliente_Verificado = Cliente_Verificado;
     }
 }
