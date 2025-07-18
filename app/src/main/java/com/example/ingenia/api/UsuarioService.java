@@ -13,6 +13,7 @@ import com.example.ingenia.Model.UsuarioActualizarDTO;
 import retrofit2.Call;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
+import retrofit2.http.Streaming;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
@@ -81,6 +82,17 @@ public interface UsuarioService {
             @Part("Id_usuario") RequestBody idUsuario,
             @Part MultipartBody.Part ArchivoINE
     );
+
+    @GET("api/ValidacionCliente/{id}")
+    Call<ValidacionClienteResponse> getValidacionCliente(@Path("id") int id);
+
+    @GET("api/ValidacionCliente/{id}/descargar-ine")
+    @Streaming
+    Call<ResponseBody> descargarINE(@Path("id") int id);
+
+    @GET("api/ValidacionCliente/{id}/descargar-pdf")
+    @Streaming
+    Call<ResponseBody> descargarPDF(@Path("id") int id);
 
 
 
