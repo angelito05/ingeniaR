@@ -50,6 +50,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.Executor;
@@ -288,29 +289,41 @@ public class CrearSolicitudFragment extends Fragment {
             }
         });
 
+        //btnValidar.setOnClickListener(v -> simularValidacionDatos());
+
         btnValidar.setOnClickListener(v -> {
             String curp = inputCurp.getText().toString().trim();
             if (!curp.isEmpty()) {
                 verificarCurp(curp);
             } else {
-                mostrarMensajeValidacion("Por favor ingresa una CURP.", false);
+                mostrarMensajeValidacion("Ingresa una CURP", false);
             }
         });
-        //btnValidar.setOnClickListener(v -> simularValidacionDatos());
 
         btnSolicitar.setOnClickListener(v -> {
             if (curpValida) {
-                crearCliente();
+                crearCliente(); // o avanzar al siguiente fragmento
             } else {
                 mostrarMensajeValidacion("Debes verificar una CURP válida antes de continuar.", false);
             }
         });
+
+    }
+    LoadingDialogFragment dialogCarga;
+    private void mostrarPantallaCarga() {
+        dialogCarga = new LoadingDialogFragment("Verificando CURP...");
+        dialogCarga.setCancelable(false);
+        dialogCarga.show(getParentFragmentManager(), "loading");
     }
 
-
+    private void ocultarPantallaCarga() {
+        if (dialogCarga != null && dialogCarga.isVisible()) {
+            dialogCarga.dismiss();
+        }
+    }
     private void verificarCurp(String curp) {
         VerificamexService service = ApiConfig.getRetrofit().create(VerificamexService.class);
-
+        mostrarPantallaCarga();
         JsonObject json = new JsonObject();
         json.addProperty("curp", curp);
 
@@ -319,13 +332,16 @@ public class CrearSolicitudFragment extends Fragment {
         call.enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
+                ocultarPantallaCarga();
                 try {
+
                     String mensaje;
                     boolean esValido = false;
 
                     if (response.isSuccessful()) {
                         mensaje = "CURP válida";
                         esValido = true;
+                        btnSolicitar.setEnabled(true);
                     } else {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
                         JsonParser parser = new JsonParser();
@@ -410,7 +426,7 @@ public class CrearSolicitudFragment extends Fragment {
 
 
     private void crearCliente() {
-        if (!datosValidados) {
+        if (!curpValida) {
             Toast.makeText(getContext(), "Primero valida los datos", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -471,7 +487,8 @@ public class CrearSolicitudFragment extends Fragment {
                 ciudad,
                 estado,
                 codigoPostal,
-                idUsuario
+                idUsuario,
+                curpValida
         );
 
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
