@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.ingenia.Model.LoginRequest;
 import com.example.ingenia.Model.User;
 import com.example.ingenia.R;
+import com.example.ingenia.Util.SecurePrefsHelper;
 import com.example.ingenia.Util.SessionManager;
 import com.example.ingenia.api.ApiConfig;
 import com.example.ingenia.api.UsuarioService;
@@ -81,7 +82,13 @@ public class LoginActivity extends AppCompatActivity {
                 @Override
                 public void onResponse(Call<User> call, Response<User> response) {
                     if (response.isSuccessful() && response.body() != null) {
-                        User usuario = response.body();
+                        User usuario = response.body();   try {
+                            SecurePrefsHelper securePrefs = new SecurePrefsHelper(LoginActivity.this);
+                            securePrefs.guardarIdUsuario(usuario.getId_usuario());
+                        } catch (Exception e) {
+                            Log.e("LoginActivity", "Error al guardar ID cifrado", e);
+                        }
+
 
                         // Guardar id_usuario y username en SharedPreferences "CrediGoPrefs"
                         SessionManager sessionManager = new SessionManager(LoginActivity.this);

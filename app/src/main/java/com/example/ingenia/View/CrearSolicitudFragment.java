@@ -12,6 +12,8 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.*;
@@ -31,13 +33,17 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.example.ingenia.Model.ClienteRequest;
 import com.example.ingenia.Model.Cliente;
 import com.example.ingenia.Model.OcrResponse;
 import com.example.ingenia.R;
+import com.example.ingenia.Util.SecurePrefsHelper;
 import com.example.ingenia.api.ApiConfig;
 import com.example.ingenia.api.UsuarioService;
 import com.google.common.util.concurrent.ListenableFuture;
+
+import org.json.JSONObject;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -82,11 +88,13 @@ public class CrearSolicitudFragment extends Fragment {
     // Variables para la cámara
     private ImageCapture imageCapture;
 
-
+    private View mensajeContainer;
+    private TextView textoMensaje;
 
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<String> permissionLauncher;
 
+    @SuppressLint("MissingInflatedId")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -122,6 +130,7 @@ public class CrearSolicitudFragment extends Fragment {
 
         // Inicializar ejecutor para la cámara
         cameraExecutor = ContextCompat.getMainExecutor(requireContext());
+
 
         // Configurar listeners
         btnEscanear.setOnClickListener(v -> toggleCameraView());
@@ -333,7 +342,7 @@ public class CrearSolicitudFragment extends Fragment {
     }
     LoadingDialogFragment dialogCarga;
     private void mostrarPantallaCarga() {
-        dialogCarga = new LoadingDialogFragment("Verificando CURP...");
+        dialogCarga = new LoadingDialogFragment("Cargando...");
         dialogCarga.setCancelable(false);
         dialogCarga.show(getParentFragmentManager(), "loading");
     }
@@ -343,6 +352,8 @@ public class CrearSolicitudFragment extends Fragment {
             dialogCarga.dismiss();
         }
     }
+
+
 
     private void takePhoto() {
         if (imageCapture == null) return;
@@ -434,21 +445,13 @@ public class CrearSolicitudFragment extends Fragment {
 
 
     private int obtenerIdUsuario() {
-        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("CrediGoPrefs", Context.MODE_PRIVATE);
-        return sharedPreferences.getInt("id_usuario", -1);
-    }
-
-    private void simularValidacionDatos() {
-        labelCurpValida.setText("CURP: VÁLIDA");
-        labelCurpValida.setTextColor(requireContext().getColor(android.R.color.holo_green_dark));
-
-        labelIneValida.setText("INE: VÁLIDA");
-        labelIneValida.setTextColor(requireContext().getColor(android.R.color.holo_green_dark));
-
-        datosValidados = true;
-        btnSolicitar.setEnabled(true);
-
-        Toast.makeText(getContext(), "Datos validados correctamente", Toast.LENGTH_SHORT).show();
+        try {
+            SecurePrefsHelper prefsHelper = new SecurePrefsHelper(requireContext());
+            return prefsHelper.obtenerIdUsuario();
+        } catch (Exception e) {
+            Log.e("CrearSolicitud", "Error al acceder a preferencias seguras", e);
+            return -1;
+        }
     }
 
     private RequestBody createPartFromString(String value) {
@@ -475,7 +478,7 @@ public class CrearSolicitudFragment extends Fragment {
         String codigoPostal = inputCp.getText().toString().trim();
 
         if (nombre.isEmpty() || curp.isEmpty() || photoFile == null) {
-            ocultarPantallaCarga(); // ❌ Ocultar si hay error temprano
+            ocultarPantallaCarga(); //  Ocultar si hay error temprano
             Toast.makeText(getContext(), "Datos incompletos o INE no capturado", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -531,7 +534,7 @@ public class CrearSolicitudFragment extends Fragment {
                     Cliente clienteCreado = response.body();
                     int idCliente = clienteCreado.idCliente;
 
-                    Toast.makeText(getContext(), "Cliente creado con id: " + idCliente, Toast.LENGTH_SHORT).show();
+                    MensajeAnimadoDialogFragment.mostrarMensaje(getParentFragmentManager(), "Cliente creado exitosamente con ID: " + idCliente, true);
 
                     // Redirigir al fragmento de solicitud final
                     SolicitudFinalFragment solicitudFinalFragment = new SolicitudFinalFragment();
@@ -546,20 +549,43 @@ public class CrearSolicitudFragment extends Fragment {
                             .addToBackStack(null)
                             .commit();
                 } else {
-                    Toast.makeText(getContext(), "Error al crear cliente", Toast.LENGTH_SHORT).show();
-                    Log.e("CrearSolicitud", "Error: " + response.errorBody());
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "";
+
+                        if (response.code() == 409) {
+                            JSONObject jsonError = new JSONObject(errorBody);
+                            String mensaje = jsonError.optString("mensaje", "La CURP ya está registrada");
+
+                            Log.w("CrearSolicitud", "CURP duplicada: " + mensaje);
+                            MensajeAnimadoDialogFragment.mostrarMensaje(getParentFragmentManager(), "CURP duplicada", false);
+                            return;
+                        }
+
+                        // Otro tipo de error
+                        JSONObject jsonError = new JSONObject(errorBody);
+                        String mensaje = jsonError.optString("mensaje", "Error al crear cliente");
+
+                        Toast.makeText(getContext(), mensaje, Toast.LENGTH_LONG).show();
+                        Log.e("CrearSolicitud", "Error del servidor: " + mensaje);
+                        MensajeAnimadoDialogFragment.mostrarMensaje(getParentFragmentManager(), "Error al validar la CURP", false);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(getContext(), "Error inesperado", Toast.LENGTH_SHORT).show();
+                        Log.e("CrearSolicitud", "Error procesando errorBody", e);
+                        MensajeAnimadoDialogFragment.mostrarMensaje(getParentFragmentManager(), "Error inesperado", false);
+
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<Cliente> call, Throwable t) {
-                ocultarPantallaCarga(); // ✅ También ocultar si hay error
-                Toast.makeText(getContext(), "Falla en conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                String mensaje = "Falla en conexión: " + t.getMessage();
+                Toast.makeText(getContext(), mensaje, Toast.LENGTH_LONG).show();
+                Log.e("CrearSolicitud", mensaje);
             }
         });
     }
-
-
 
     private void limpiarFormulario() {
         inputNombre.setText("");

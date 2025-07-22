@@ -116,6 +116,7 @@
             android:layout_height="wrap_content"
             android:minHeight="48dp"
             android:padding="12dp"
+            android:maxLength="18"
             android:hint="CURP"
             android:inputType="text"
             android:layout_marginBottom="12dp"/>
@@ -126,6 +127,7 @@
             android:layout_height="wrap_content"
             android:minHeight="48dp"
             android:padding="12dp"
+            android:maxLength="18"
             android:hint="Clave de Elector"
             android:inputType="text"
             android:layout_marginBottom="12dp"/>
@@ -178,6 +180,7 @@
             android:layout_height="wrap_content"
             android:minHeight="48dp"
             android:padding="12dp"
+            android:maxLength="5"
             android:hint="Estado"
             android:inputType="text"
             android:layout_marginBottom="24dp"/>
