@@ -14,7 +14,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginBottom="24dp"
-                android:text="Crear Solicitud de Crédito"
+                android:text="Caratula de Crédito"
                 android:textColor="@color/text_primary"
                 android:textSize="24sp"
                 android:textStyle="bold" />
@@ -51,14 +51,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <EditText
-            android:id="@+id/input_tasa"
-            android:hint="Tasa de interés (%)"
-            android:inputType="numberDecimal"
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:padding="12dp"/>
+            android:textColor="@color/text_primary"
+            android:text="Tasa de interés (%)"
+            android:textSize="18dp"/>
+
+        <Spinner
+            android:id="@+id/input_tasa"
+            style="@style/Widget.CrediGo.Spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:spinnerMode="dropdown" />
 
         <EditText
             android:id="@+id/input_fecha_inicio"
@@ -90,15 +96,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
-
-        <EditText
-            android:id="@+id/input_pago"
-            android:hint="Monto solicitado"
-            android:inputType="numberDecimal"
-            android:minHeight="48dp"
-            android:padding="12dp"
+        <TextView
+            android:id="@+id/text_pago_mensual"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"
+            android:text="Pago mensual estimado: $0.00"
+            android:textSize="16sp"
+            android:padding="8dp"/>
 
         <Button
             android:id="@+id/btn_enviar_solicitud"
