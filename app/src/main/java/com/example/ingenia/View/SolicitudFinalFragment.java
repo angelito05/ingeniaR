@@ -22,11 +22,10 @@ import retrofit2.*;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class SolicitudFinalFragment extends Fragment {
-
     private int idCliente;
     private int idUsuario;
-
-    private EditText inputMonto, inputPlazo, inputMotivo;
+    private Spinner inputPlazo;
+    private EditText inputMonto, inputMotivo;
     private Button btnEnviar;
 
     @Override
@@ -53,12 +52,20 @@ public class SolicitudFinalFragment extends Fragment {
 
         btnEnviar.setOnClickListener(v -> enviarSolicitudCredito());
 
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(),
+                R.layout.spinner_item,
+                new String[]{" 6 meses", "12 meses", "18 meses", "24 meses", "48 meses"}
+        );
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        inputPlazo.setAdapter(adapter);
+
         return view;
     }
 
     private void enviarSolicitudCredito() {
         String montoStr = inputMonto.getText().toString().trim();
-        String plazoStr = inputPlazo.getText().toString().trim();
+        String plazoStr = inputPlazo.getSelectedItem().toString().replace(" meses", "").trim();
         String motivo = inputMotivo.getText().toString().trim();
 
         if (montoStr.isEmpty() || plazoStr.isEmpty()) {

@@ -9,6 +9,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="24dp"
+                android:text="Crear Solicitud de Crédito"
+                android:textColor="@color/text_primary"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
         <EditText
             android:id="@+id/input_monto"
             android:hint="Monto solicitado"
@@ -17,15 +27,21 @@
             android:padding="12dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
-
-        <EditText
-            android:id="@+id/input_plazo"
-            android:hint="Plazo en meses"
-            android:minHeight="48dp"
-            android:padding="12dp"
-            android:inputType="number"
+        <TextView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:padding="14dp"
+            android:textSize="18dp"
+            android:text="Plazo"
+            android:textColor="@color/text_primary"/>
+
+        <Spinner
+            android:id="@+id/input_plazo"
+            style="@style/Widget.CrediGo.Spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:spinnerMode="dropdown" />
 
         <EditText
             android:id="@+id/input_motivo"
