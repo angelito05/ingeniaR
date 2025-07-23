@@ -34,10 +34,17 @@ public class SolicitudFinalFragment extends Fragment {
     private int idCliente;
     private int idUsuario;
     private Spinner inputPlazo;
+    private TextView textPagoMensual;
+
     private EditText inputMonto, inputMotivo;
-    private EditText inputTasa, inputFechaInicio, inputFechaFin, inputObservaciones, inputPago;
+    private EditText inputFechaInicio, inputFechaFin, inputObservaciones, inputPago;
 
     private Button btnEnviar;
+    private double pago_mensual_estimado = 0.0;
+
+    private Spinner inputTasa;
+    private double tasaSeleccionada = 0.0;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -63,6 +70,7 @@ public class SolicitudFinalFragment extends Fragment {
         inputFechaInicio = view.findViewById(R.id.input_fecha_inicio);
         inputFechaFin = view.findViewById(R.id.input_fecha_fin);
         inputObservaciones = view.findViewById(R.id.input_observaciones);
+        textPagoMensual = view.findViewById(R.id.text_pago_mensual);
         btnEnviar = view.findViewById(R.id.btn_enviar_solicitud);
 
         inputFechaFin.setFocusable(false);
@@ -84,11 +92,38 @@ public class SolicitudFinalFragment extends Fragment {
         inputPlazo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                calcularPagoMensual();
                 calcularFechaFin();
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
+        // Configurar el Spinner de tasa (asegúrate que inputTasa sea el ID del Spinner en XML)
+        String[] tasas = {"10.00", "15.00", "20.00", "25.00"};
+        ArrayAdapter<String> tasaAdapter = new ArrayAdapter<>(requireContext(),
+                android.R.layout.simple_spinner_item, tasas);
+        tasaAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        inputTasa.setAdapter(tasaAdapter);
+
+        inputTasa.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String seleccion = tasas[position].replace("%", "").trim();
+                try {
+                    tasaSeleccionada = Double.parseDouble(seleccion);
+                } catch (NumberFormatException e) {
+                    tasaSeleccionada = 0.0;
+                }
+                calcularPagoMensual();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                tasaSeleccionada = 0.0;
+                calcularPagoMensual();
+            }
         });
 
         return view;
@@ -132,13 +167,36 @@ public class SolicitudFinalFragment extends Fragment {
             e.printStackTrace();
         }
     }
+    private void calcularPagoMensual() {
+        String montoStr = inputMonto.getText().toString().trim();
+        String plazoStr = inputPlazo.getSelectedItem().toString().replace(" meses", "").trim();
+
+        if (montoStr.isEmpty() || plazoStr.isEmpty() || tasaSeleccionada == 0.0) {
+            textPagoMensual.setText("Pago mensual estimado: $0.00");
+            return;
+        }
+
+        try {
+            double monto = Double.parseDouble(montoStr);
+            int plazo = Integer.parseInt(plazoStr);
+
+            pago_mensual_estimado = (monto * (1 + (tasaSeleccionada / 100))) / plazo;
+
+            textPagoMensual.setText(String.format(Locale.getDefault(),
+                    "Pago mensual estimado: $%.2f", pago_mensual_estimado));
+        } catch (NumberFormatException e) {
+            pago_mensual_estimado = 0.0;
+            textPagoMensual.setText("Pago mensual estimado: $0.00");
+        }
+    }
+
 
     private void enviarSolicitudCredito() {
         // Obtener valores del formulario
         String montoStr = inputMonto.getText().toString().trim();
         String plazoStr = inputPlazo.getSelectedItem().toString().replace(" meses", "").trim();
         String motivo = inputMotivo.getText().toString().trim();
-        String tasaStr = inputTasa.getText().toString().trim();
+        String tasaStr = inputTasa.getSelectedItem().toString().trim();
         String fechaInicio = inputFechaInicio.getText().toString().trim();
         String fechaFin = inputFechaFin.getText().toString().trim();
         String observaciones = inputObservaciones.getText().toString().trim();
@@ -198,9 +256,6 @@ public class SolicitudFinalFragment extends Fragment {
             Toast.makeText(getContext(), "Formato de fecha inválido", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        // Calcular pago mensual estimado (puedes personalizar esta fórmula)
-        double pago_mensual_estimado = (monto * (1 + (tasa / 100))) / plazo;
 
         // Crear objeto solicitud
         SolicitudCreditoRequest solicitud = new SolicitudCreditoRequest(
