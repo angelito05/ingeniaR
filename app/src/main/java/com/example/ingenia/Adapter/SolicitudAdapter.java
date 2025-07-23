@@ -54,6 +54,12 @@ public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.View
                         "Monto: $" + sc.monto_solicitado + "\n" +
                         "Motivo: " + sc.motivo
         );
+        String interesTexto = String.format("Interés: %.2f%% - Mensualidad: $%.2f",
+                sc.tasa_interes, sc.pago_mensual_estimado);
+        holder.infoFinanciera.setText(interesTexto);
+
+
+
 
         // Mostrar controles si es admin
         if (esAdmin) {
@@ -113,6 +119,8 @@ public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.View
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView nombre, detalles, trabajador;
+        TextView infoFinanciera;
+
         ImageView icono;
         Button btnAprobar, btnRechazar;
         ImageButton btnEliminar;
@@ -128,6 +136,8 @@ public class SolicitudAdapter extends RecyclerView.Adapter<SolicitudAdapter.View
             btnEliminar = itemView.findViewById(R.id.btnEliminar);
             botonesEstado = itemView.findViewById(R.id.botonesEstado);
             icono = itemView.findViewById(R.id.iconoEstado);
+            infoFinanciera = itemView.findViewById(R.id.infoFinanciera);
+
         }
     }
 }

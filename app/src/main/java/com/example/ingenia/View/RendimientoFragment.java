@@ -12,6 +12,10 @@ import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.view.*;
 import android.widget.*;
+import android.text.TextWatcher;
+import android.text.Editable;
+
+
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -347,6 +351,22 @@ public class RendimientoFragment extends Fragment {
             return dialog;
         }
 
+        private void actualizarPagoMensual(TextView tvPagoMensual, double tasa, int plazo, double monto) {
+            if (plazo <= 0 || monto <= 0) {
+                tvPagoMensual.setText("Pago mensual estimado: $0.00");
+                return;
+            }
+            double tasaMensual = tasa / 100.0 / 12.0;
+            double pago;
+            if (tasaMensual > 0) {
+                pago = (monto * tasaMensual) / (1 - Math.pow(1 + tasaMensual, -plazo));
+            } else {
+                pago = monto / plazo;
+            }
+            tvPagoMensual.setText(String.format(Locale.getDefault(), "Pago mensual estimado: $%.2f", pago));
+        }
+
+
         @Override
         public void onCreate(@Nullable Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -364,10 +384,49 @@ public class RendimientoFragment extends Fragment {
             final EditText etPlazo = view.findViewById(R.id.etPlazo);
             final EditText etMonto = view.findViewById(R.id.etMonto);
             final EditText etMotivo = view.findViewById(R.id.etMotivo);
+            final EditText etTasaInteres = view.findViewById(R.id.etTasaInteres);
+            final TextView tvPagoMensual = view.findViewById(R.id.tvPagoMensual);
+            final EditText etObservaciones = view.findViewById(R.id.etObservaciones);
 
             etPlazo.setText(String.valueOf(solicitud.plazo_meses));
             etMonto.setText(String.valueOf(solicitud.monto_solicitado));
             etMotivo.setText(solicitud.motivo);
+            etTasaInteres.setText(String.valueOf(solicitud.tasa_interes));
+            etObservaciones.setText(solicitud.observaciones);
+
+            // TextWatcher para actualizar el pago mensual en tiempo real
+            TextWatcher watcher = new TextWatcher() {
+                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    double tasa = 0;
+                    int plazo = 0;
+                    double monto = 0;
+                    try { tasa = Double.parseDouble(etTasaInteres.getText().toString()); } catch (NumberFormatException ignored) {}
+                    try { plazo = Integer.parseInt(etPlazo.getText().toString()); } catch (NumberFormatException ignored) {}
+                    try { monto = Double.parseDouble(etMonto.getText().toString()); } catch (NumberFormatException ignored) {}
+
+                    double tasaMensual = tasa / 100.0 / 12.0;
+                    double pago;
+                    if (plazo <= 0 || monto <= 0) {
+                        tvPagoMensual.setText("Pago mensual estimado: $0.00");
+                        return;
+                    }
+                    if (tasaMensual > 0) {
+                        pago = (monto * tasaMensual) / (1 - Math.pow(1 + tasaMensual, -plazo));
+                    } else {
+                        pago = monto / plazo;
+                    }
+                    tvPagoMensual.setText(String.format(Locale.getDefault(), "Pago mensual estimado: $%.2f", pago));
+                }
+                @Override public void afterTextChanged(android.text.Editable s) {}
+            };
+
+            etPlazo.addTextChangedListener(watcher);
+            etMonto.addTextChangedListener(watcher);
+            etTasaInteres.addTextChangedListener(watcher);
+
+            // Mostrar pago mensual inicial
+            watcher.onTextChanged(null, 0, 0, 0);
 
             builder.setView(view)
                     .setTitle("Editar Solicitud")
@@ -375,13 +434,32 @@ public class RendimientoFragment extends Fragment {
                         String plazo = etPlazo.getText().toString().trim();
                         String monto = etMonto.getText().toString().trim();
                         String motivo = etMotivo.getText().toString().trim();
+                        String tasa = etTasaInteres.getText().toString().trim();
+                        String observaciones = etObservaciones.getText().toString().trim();
+                        solicitud.observaciones = observaciones;
+
+                        if (!tasa.isEmpty()) solicitud.tasa_interes = Double.parseDouble(tasa);
 
                         if (!plazo.isEmpty() && !monto.isEmpty() && !motivo.isEmpty()) {
                             try {
                                 solicitud.plazo_meses = Integer.parseInt(plazo);
                                 solicitud.monto_solicitado = Double.parseDouble(monto);
                                 solicitud.motivo = motivo;
+
+                                // Recalcular pago mensual para guardar
+                                double tasaMensual = solicitud.tasa_interes / 100.0 / 12.0;
+                                int plazoMeses = solicitud.plazo_meses;
+                                double montoSolicitado = solicitud.monto_solicitado;
+
+                                if (tasaMensual > 0) {
+                                    double pago = (montoSolicitado * tasaMensual) / (1 - Math.pow(1 + tasaMensual, -plazoMeses));
+                                    solicitud.pago_mensual_estimado = pago;
+                                } else {
+                                    solicitud.pago_mensual_estimado = montoSolicitado / plazoMeses;
+                                }
+
                                 if (listener != null) listener.onEditar(solicitud);
+
                             } catch (NumberFormatException e) {
                                 Toast.makeText(getContext(), "Formato inválido", Toast.LENGTH_SHORT).show();
                             }
@@ -398,5 +476,6 @@ public class RendimientoFragment extends Fragment {
 
             return builder.create();
         }
+
     }
 }

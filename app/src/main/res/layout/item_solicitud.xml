@@ -41,6 +41,16 @@
                 android:layout_marginTop="2dp" />
 
             <TextView
+                android:id="@+id/infoFinanciera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Interés: 10% - Mensualidad: $540.00"
+                android:textSize="13sp"
+                android:textColor="#555555"
+                android:layout_marginTop="2dp" />
+
+
+            <TextView
                 android:id="@+id/trabajador"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
