@@ -57,10 +57,13 @@ public interface UsuarioService {
 
     @DELETE("api/Cliente/{id}")
     Call<Void> eliminarCliente(@Path("id") int idCliente);
+
     @DELETE("api/Solicitud/{id}")
     Call<ResponseBody> eliminarSolicitud(@Path("id") int idSolicitud);
+
     @PUT("api/Solicitud/editar/{id}")
     Call<Object> editarSolicitud(@Path("id") int id, @Body SolicitudCredito solicitud);
+
     @Multipart
     @POST("api/OCR/ine")
     Call<OcrResponse> enviarIne(@Part MultipartBody.Part archivoINE);

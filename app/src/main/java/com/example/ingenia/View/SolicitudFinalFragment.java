@@ -103,8 +103,8 @@ public class SolicitudFinalFragment extends Fragment {
         // Configurar el Spinner de tasa (asegúrate que inputTasa sea el ID del Spinner en XML)
         String[] tasas = {"10.00", "15.00", "20.00", "25.00"};
         ArrayAdapter<String> tasaAdapter = new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_spinner_item, tasas);
-        tasaAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                R.layout.spinner_item, tasas);
+        tasaAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         inputTasa.setAdapter(tasaAdapter);
 
         inputTasa.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -179,11 +179,17 @@ public class SolicitudFinalFragment extends Fragment {
         try {
             double monto = Double.parseDouble(montoStr);
             int plazo = Integer.parseInt(plazoStr);
+            double tasaMensual = tasaSeleccionada / 100.0 / 12.0;
 
-            pago_mensual_estimado = (monto * (1 + (tasaSeleccionada / 100))) / plazo;
+            double pago;
+            if (tasaMensual > 0) {
+                pago = (monto * tasaMensual) / (1 - Math.pow(1 + tasaMensual, -plazo));
+            } else {
+                pago = monto / plazo;
+            }
 
-            textPagoMensual.setText(String.format(Locale.getDefault(),
-                    "Pago mensual estimado: $%.2f", pago_mensual_estimado));
+            pago_mensual_estimado = pago;
+            textPagoMensual.setText(String.format(Locale.getDefault(), "Pago mensual estimado: $%.2f", pago));
         } catch (NumberFormatException e) {
             pago_mensual_estimado = 0.0;
             textPagoMensual.setText("Pago mensual estimado: $0.00");

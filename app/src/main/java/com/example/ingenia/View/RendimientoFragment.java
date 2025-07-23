@@ -436,7 +436,6 @@ public class RendimientoFragment extends Fragment {
                         String motivo = etMotivo.getText().toString().trim();
                         String tasa = etTasaInteres.getText().toString().trim();
                         String observaciones = etObservaciones.getText().toString().trim();
-                        solicitud.observaciones = observaciones;
 
                         if (!tasa.isEmpty()) solicitud.tasa_interes = Double.parseDouble(tasa);
 
@@ -445,6 +444,7 @@ public class RendimientoFragment extends Fragment {
                                 solicitud.plazo_meses = Integer.parseInt(plazo);
                                 solicitud.monto_solicitado = Double.parseDouble(monto);
                                 solicitud.motivo = motivo;
+                                solicitud.observaciones = observaciones;
 
                                 // Recalcular pago mensual para guardar
                                 double tasaMensual = solicitud.tasa_interes / 100.0 / 12.0;
