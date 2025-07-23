@@ -1,15 +1,11 @@
 package com.example.ingenia.Model;
-
 import java.io.Serializable;
 
 public class SolicitudCredito implements Serializable {
     public int id_solicitud;
     public int id_usuario;
-    public String nombreUsuario;  // Nombre del trabajador
-
-    public int id_cliente;
-    public String nombreCliente;  // Nombre del cliente
-
+    public String nombreUsuario;  // <-- nuevo campo para nombre del trabajador
+    public String nombreCliente;  // <-- nuevo campo para nombre del cliente
     public double monto_solicitado;
     public int plazo_meses;
     public String motivo;

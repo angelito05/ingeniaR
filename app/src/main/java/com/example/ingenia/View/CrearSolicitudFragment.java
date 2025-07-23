@@ -75,8 +75,6 @@ public class CrearSolicitudFragment extends Fragment {
     private ImageButton btnFlashToggle;
     private RelativeLayout cameraContainer;
     private ImageView ineFrame;
-
-    private static final int REQUEST_CAMERA_PERMISSION = 100;
     private Uri photoUri;
     private File photoFile;
     private boolean datosValidados = false;
@@ -84,13 +82,7 @@ public class CrearSolicitudFragment extends Fragment {
     private Executor cameraExecutor;
     private boolean isCameraActive = false;
     private boolean isFlashEnabled = true;
-
-    // Variables para la cámara
     private ImageCapture imageCapture;
-
-    private View mensajeContainer;
-    private TextView textoMensaje;
-
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<String> permissionLauncher;
 
@@ -130,7 +122,6 @@ public class CrearSolicitudFragment extends Fragment {
 
         // Inicializar ejecutor para la cámara
         cameraExecutor = ContextCompat.getMainExecutor(requireContext());
-
 
         // Configurar listeners
         btnEscanear.setOnClickListener(v -> toggleCameraView());
@@ -442,8 +433,6 @@ public class CrearSolicitudFragment extends Fragment {
         });
     }
 
-
-
     private int obtenerIdUsuario() {
         try {
             SecurePrefsHelper prefsHelper = new SecurePrefsHelper(requireContext());
@@ -463,7 +452,7 @@ public class CrearSolicitudFragment extends Fragment {
             Toast.makeText(getContext(), "Validando y creando cliente...", Toast.LENGTH_SHORT).show();
         }
 
-        mostrarPantallaCarga(); // ⏳ Mostrar diálogo de carga
+        mostrarPantallaCarga(); //Mostrar diálogo de carga
 
         String nombre = inputNombre.getText().toString().trim();
         String apellidoP = inputApellidoPaterno.getText().toString().trim();
@@ -478,7 +467,7 @@ public class CrearSolicitudFragment extends Fragment {
         String codigoPostal = inputCp.getText().toString().trim();
 
         if (nombre.isEmpty() || curp.isEmpty() || photoFile == null) {
-            ocultarPantallaCarga(); //  Ocultar si hay error temprano
+            ocultarPantallaCarga(); //Ocultar si hay error temprano
             Toast.makeText(getContext(), "Datos incompletos o INE no capturado", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -528,7 +517,7 @@ public class CrearSolicitudFragment extends Fragment {
         call.enqueue(new Callback<Cliente>() {
             @Override
             public void onResponse(Call<Cliente> call, Response<Cliente> response) {
-                ocultarPantallaCarga(); // ✅ Ocultar al terminar
+                ocultarPantallaCarga(); //Ocultar al terminar
 
                 if (response.isSuccessful() && response.body() != null) {
                     Cliente clienteCreado = response.body();

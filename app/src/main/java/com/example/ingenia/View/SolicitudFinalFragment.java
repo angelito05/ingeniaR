@@ -22,6 +22,8 @@ import com.example.ingenia.R;
 import com.example.ingenia.api.ApiConfig;
 import com.example.ingenia.api.UsuarioService;
 
+import org.json.JSONObject;
+
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.*;
@@ -31,8 +33,8 @@ public class SolicitudFinalFragment extends Fragment {
 
     private int idCliente;
     private int idUsuario;
-
-    private EditText inputMonto, inputPlazo, inputMotivo;
+    private Spinner inputPlazo;
+    private EditText inputMonto, inputMotivo;
     private EditText inputTasa, inputFechaInicio, inputFechaFin, inputObservaciones, inputPago;
 
     private Button btnEnviar;
@@ -62,12 +64,32 @@ public class SolicitudFinalFragment extends Fragment {
         inputFechaFin = view.findViewById(R.id.input_fecha_fin);
         inputObservaciones = view.findViewById(R.id.input_observaciones);
         btnEnviar = view.findViewById(R.id.btn_enviar_solicitud);
-        inputPago = view.findViewById(R.id.input_pago);
+
+        inputFechaFin.setFocusable(false);
+        inputFechaFin.setClickable(false);
 
         // Evento para mostrar calendario al tocar
         inputFechaInicio.setOnClickListener(v -> mostrarDatePicker(inputFechaInicio));
         inputFechaFin.setOnClickListener(v -> mostrarDatePicker(inputFechaFin));
         btnEnviar.setOnClickListener(v -> enviarSolicitudCredito());
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(),
+                R.layout.spinner_item,
+                new String[]{" 6 meses", "12 meses", "18 meses", "24 meses", "48 meses"}
+        );
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        inputPlazo.setAdapter(adapter);
+
+        inputPlazo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                calcularFechaFin();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
 
         return view;
     }
@@ -84,15 +106,37 @@ public class SolicitudFinalFragment extends Fragment {
                     String diaStr = dayOfMonth < 10 ? "0" + dayOfMonth : String.valueOf(dayOfMonth);
                     String fechaFormateada = year + "-" + mesStr + "-" + diaStr;
                     editText.setText(fechaFormateada);
+                    calcularFechaFin(); // Actualizar fecha final
                 }, anio, mes, dia);
         datePickerDialog.show();
     }
 
+    private void calcularFechaFin() {
+        String fechaInicioStr = inputFechaInicio.getText().toString();
+        String plazoStr = inputPlazo.getSelectedItem().toString().replace(" meses", "").trim();
+
+        if (fechaInicioStr.isEmpty() || plazoStr.isEmpty()) return;
+
+        try {
+            int meses = Integer.parseInt(plazoStr);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            Date fechaInicio = sdf.parse(fechaInicioStr);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(fechaInicio);
+            calendar.add(Calendar.MONTH, meses);
+
+            String fechaFinStr = sdf.format(calendar.getTime());
+            inputFechaFin.setText(fechaFinStr);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void enviarSolicitudCredito() {
         // Obtener valores del formulario
         String montoStr = inputMonto.getText().toString().trim();
-        String plazoStr = inputPlazo.getText().toString().trim();
+        String plazoStr = inputPlazo.getSelectedItem().toString().replace(" meses", "").trim();
         String motivo = inputMotivo.getText().toString().trim();
         String tasaStr = inputTasa.getText().toString().trim();
         String fechaInicio = inputFechaInicio.getText().toString().trim();
@@ -202,8 +246,15 @@ public class SolicitudFinalFragment extends Fragment {
                             .replace(R.id.container_fragment, rendimientoFragment)
                             .addToBackStack(null)
                             .commit();
-                } else {
-                    Toast.makeText(getContext(), "Error al enviar solicitud: " + response.code(), Toast.LENGTH_LONG).show();
+                } else try {
+                    // Lee el cuerpo de error como JSON
+                    String errorBody = response.errorBody().string();
+                    JSONObject json = new JSONObject(errorBody);
+
+                    String mensaje = json.optString("mensaje", "Error al enviar solicitud");
+                    Toast.makeText(getContext(), mensaje, Toast.LENGTH_LONG).show();
+                } catch (Exception e) {
+                    Toast.makeText(getContext(), "Error inesperado: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
             }
 
