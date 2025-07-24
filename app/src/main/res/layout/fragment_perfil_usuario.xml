@@ -16,10 +16,9 @@
                 android:id="@+id/UserImage"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
-                android:layout_marginBottom="16dp"
-                android:padding="16dp"
                 android:src="@drawable/ic_profile"
-                app:tint="@color/purple_500" />
+                android:layout_marginBottom="16dp"
+                android:padding="16dp"/>
 
             <TextView
                 android:id="@+id/tvUsername"
