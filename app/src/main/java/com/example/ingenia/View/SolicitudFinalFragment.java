@@ -294,7 +294,7 @@ public class SolicitudFinalFragment extends Fragment {
             @Override
             public void onResponse(Call<SolicitudCredito> call, Response<SolicitudCredito> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    Toast.makeText(getContext(), "Solicitud creada con ID: " + response.body().id_solicitud, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), "Solicitud creada exitosamente", Toast.LENGTH_LONG).show();
 
                     // Redirigir a RendimientoFragment
                     RendimientoFragment rendimientoFragment = new RendimientoFragment();

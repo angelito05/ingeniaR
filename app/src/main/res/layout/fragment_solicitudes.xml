@@ -1,67 +1,76 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:fillViewport="true">
 
-    <!-- Título -->
-    <TextView
-        android:id="@+id/tituloSolicitudes"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/text_primary"
-        android:text="SOLICITUDES"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:layout_marginBottom="16dp" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <!-- Contadores -->
-    <TextView
-        android:id="@+id/contadorTotal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Total de solicitudes: 0"
-        android:textColor="@color/text_primary"
-        android:textSize="16sp" />
+        <!-- Título -->
+        <TextView
+            android:id="@+id/tituloSolicitudes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"
+            android:text="Dashboard"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
 
-    <TextView
-        android:id="@+id/contadorAprobadas"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Aprobadas: 0"
-        android:textColor="@color/text_primary"
-        android:textSize="16sp" />
+        <!-- Contadores -->
+        <TextView
+            android:id="@+id/contadorTotal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Total de solicitudes: 0"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp" />
 
-    <TextView
-        android:id="@+id/contadorRechazadas"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Rechazadas: 0"
-        android:textColor="@color/text_primary"
-        android:textSize="16sp"
-        android:layout_marginBottom="8dp" />
+        <TextView
+            android:id="@+id/contadorAprobadas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Aprobadas: 0"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp" />
 
-    <com.github.mikephil.charting.charts.BarChart
-        android:id="@+id/barChart"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:layout_marginTop="16dp"/>
+        <TextView
+            android:id="@+id/contadorRechazadas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rechazadas: 0"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp" />
 
-    <Spinner
-        android:id="@+id/spinnerFiltroAdmin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        style="@style/Widget.CrediGo.Spinner"
-        android:layout_margin="16dp"/>
+        <!-- Gráfico -->
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/barChart"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginTop="16dp"/>
 
+        <!-- Filtro -->
+        <Spinner
+            android:id="@+id/spinnerFiltroAdmin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Widget.CrediGo.Spinner"
+            android:layout_margin="16dp"/>
 
-    <!-- RecyclerView para solicitudes -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerSolicitudes"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
-</LinearLayout>
+        <!-- RecyclerView para solicitudes -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerSolicitudes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
+            android:layout_marginTop="16dp"/>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
