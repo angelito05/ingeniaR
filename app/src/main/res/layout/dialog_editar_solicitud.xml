@@ -5,12 +5,19 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <EditText
-        android:id="@+id/etPlazo"
-        android:inputType="number"
-        android:hint="Plazo en meses"
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:padding="14dp"
+        android:textSize="18dp"
+        android:text="Plazo"
+        android:textColor="@color/text_primary"/>
+
+    <Spinner
+        android:id="@+id/spinnerPlazo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/Widget.CrediGo.Spinner"/>
 
     <EditText
         android:id="@+id/etMonto"
@@ -26,12 +33,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
-    <EditText
-        android:id="@+id/etTasaInteres"
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Tasa de interés (%)"
-        android:inputType="numberDecimal" />
+        android:textColor="@color/text_primary"
+        android:text="Tasa de interés (%)"
+        android:textSize="18dp"/>
+
+
+    <Spinner
+        android:id="@+id/spinnerTasaInteres"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/Widget.CrediGo.Spinner"/>
+
     <EditText
         android:id="@+id/etObservaciones"
         android:hint="Observaciones"
@@ -40,7 +55,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
-
     <TextView
         android:id="@+id/tvPagoMensual"
         android:layout_width="match_parent"
@@ -48,8 +62,6 @@
         android:text="Pago mensual estimado: $0.00"
         android:textSize="16sp"
         android:paddingTop="8dp"
-        android:textColor="#000000" />
-
-
+        android:textColor="@color/text_primary" />
 
 </LinearLayout>

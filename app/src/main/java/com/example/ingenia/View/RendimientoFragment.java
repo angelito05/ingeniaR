@@ -381,101 +381,89 @@ public class RendimientoFragment extends Fragment {
             AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
             View view = requireActivity().getLayoutInflater().inflate(R.layout.dialog_editar_solicitud, null);
 
-            final EditText etPlazo = view.findViewById(R.id.etPlazo);
-            final EditText etMonto = view.findViewById(R.id.etMonto);
-            final EditText etMotivo = view.findViewById(R.id.etMotivo);
-            final EditText etTasaInteres = view.findViewById(R.id.etTasaInteres);
-            final TextView tvPagoMensual = view.findViewById(R.id.tvPagoMensual);
-            final EditText etObservaciones = view.findViewById(R.id.etObservaciones);
+            Spinner spinnerPlazo = view.findViewById(R.id.spinnerPlazo);
+            Spinner spinnerTasa = view.findViewById(R.id.spinnerTasaInteres);
+            EditText etMonto = view.findViewById(R.id.etMonto);
+            EditText etMotivo = view.findViewById(R.id.etMotivo);
+            EditText etObservaciones = view.findViewById(R.id.etObservaciones);
+            TextView tvPagoMensual = view.findViewById(R.id.tvPagoMensual);
 
-            etPlazo.setText(String.valueOf(solicitud.plazo_meses));
+            String[] opcionesPlazo = {"6", "12", "18", "24", "48"};
+            String[] opcionesTasa = {"10.0", "15.0", "20.0", "25.0"};
+
+            ArrayAdapter<String> adapterPlazo = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, opcionesPlazo);
+            adapterPlazo.setDropDownViewResource(R.layout.spinner_dropdown_item);
+            spinnerPlazo.setAdapter(adapterPlazo);
+
+            ArrayAdapter<String> adapterTasa = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, opcionesTasa);
+            adapterTasa.setDropDownViewResource(R.layout.spinner_dropdown_item);
+            spinnerTasa.setAdapter(adapterTasa);
+
+            // Establecer valores actuales
+            spinnerPlazo.setSelection(Arrays.asList(opcionesPlazo).indexOf(String.valueOf(solicitud.plazo_meses)));
+            spinnerTasa.setSelection(Arrays.asList(opcionesTasa).indexOf(String.valueOf(solicitud.tasa_interes)));
             etMonto.setText(String.valueOf(solicitud.monto_solicitado));
             etMotivo.setText(solicitud.motivo);
-            etTasaInteres.setText(String.valueOf(solicitud.tasa_interes));
             etObservaciones.setText(solicitud.observaciones);
 
-            // TextWatcher para actualizar el pago mensual en tiempo real
-            TextWatcher watcher = new TextWatcher() {
-                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    double tasa = 0;
-                    int plazo = 0;
-                    double monto = 0;
-                    try { tasa = Double.parseDouble(etTasaInteres.getText().toString()); } catch (NumberFormatException ignored) {}
-                    try { plazo = Integer.parseInt(etPlazo.getText().toString()); } catch (NumberFormatException ignored) {}
-                    try { monto = Double.parseDouble(etMonto.getText().toString()); } catch (NumberFormatException ignored) {}
-
-                    double tasaMensual = tasa / 100.0 / 12.0;
-                    double pago;
-                    if (plazo <= 0 || monto <= 0) {
-                        tvPagoMensual.setText("Pago mensual estimado: $0.00");
-                        return;
-                    }
-                    if (tasaMensual > 0) {
-                        pago = (monto * tasaMensual) / (1 - Math.pow(1 + tasaMensual, -plazo));
-                    } else {
-                        pago = monto / plazo;
-                    }
-                    tvPagoMensual.setText(String.format(Locale.getDefault(), "Pago mensual estimado: $%.2f", pago));
+            AdapterView.OnItemSelectedListener listenerSpinner = new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    actualizarPago();
                 }
-                @Override public void afterTextChanged(android.text.Editable s) {}
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {}
+
+                private void actualizarPago() {
+                    double tasa = Double.parseDouble(spinnerTasa.getSelectedItem().toString());
+                    int plazo = Integer.parseInt(spinnerPlazo.getSelectedItem().toString());
+                    double monto;
+                    try { monto = Double.parseDouble(etMonto.getText().toString()); } catch (NumberFormatException e) { monto = 0; }
+                    actualizarPagoMensual(tvPagoMensual, tasa, plazo, monto);
+                }
             };
 
-            etPlazo.addTextChangedListener(watcher);
-            etMonto.addTextChangedListener(watcher);
-            etTasaInteres.addTextChangedListener(watcher);
+            spinnerPlazo.setOnItemSelectedListener(listenerSpinner);
+            spinnerTasa.setOnItemSelectedListener(listenerSpinner);
 
-            // Mostrar pago mensual inicial
-            watcher.onTextChanged(null, 0, 0, 0);
+            etMonto.addTextChangedListener(new TextWatcher() {
+                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    listenerSpinner.onItemSelected(null, null, 0, 0);
+                }
+                @Override public void afterTextChanged(Editable s) {}
+            });
 
             builder.setView(view)
                     .setTitle("Editar Solicitud")
                     .setPositiveButton("Guardar", (dialog, which) -> {
-                        String plazo = etPlazo.getText().toString().trim();
-                        String monto = etMonto.getText().toString().trim();
-                        String motivo = etMotivo.getText().toString().trim();
-                        String tasa = etTasaInteres.getText().toString().trim();
-                        String observaciones = etObservaciones.getText().toString().trim();
+                        try {
+                            solicitud.plazo_meses = Integer.parseInt(spinnerPlazo.getSelectedItem().toString());
+                            solicitud.tasa_interes = Double.parseDouble(spinnerTasa.getSelectedItem().toString());
+                            solicitud.monto_solicitado = Double.parseDouble(etMonto.getText().toString().trim());
+                            solicitud.motivo = etMotivo.getText().toString().trim();
+                            solicitud.observaciones = etObservaciones.getText().toString().trim();
 
-                        if (!tasa.isEmpty()) solicitud.tasa_interes = Double.parseDouble(tasa);
-
-                        if (!plazo.isEmpty() && !monto.isEmpty() && !motivo.isEmpty()) {
-                            try {
-                                solicitud.plazo_meses = Integer.parseInt(plazo);
-                                solicitud.monto_solicitado = Double.parseDouble(monto);
-                                solicitud.motivo = motivo;
-                                solicitud.observaciones = observaciones;
-
-                                // Recalcular pago mensual para guardar
-                                double tasaMensual = solicitud.tasa_interes / 100.0 / 12.0;
-                                int plazoMeses = solicitud.plazo_meses;
-                                double montoSolicitado = solicitud.monto_solicitado;
-
-                                if (tasaMensual > 0) {
-                                    double pago = (montoSolicitado * tasaMensual) / (1 - Math.pow(1 + tasaMensual, -plazoMeses));
-                                    solicitud.pago_mensual_estimado = pago;
-                                } else {
-                                    solicitud.pago_mensual_estimado = montoSolicitado / plazoMeses;
-                                }
-
-                                if (listener != null) listener.onEditar(solicitud);
-
-                            } catch (NumberFormatException e) {
-                                Toast.makeText(getContext(), "Formato inválido", Toast.LENGTH_SHORT).show();
+                            double tasaMensual = solicitud.tasa_interes / 100.0 / 12.0;
+                            if (tasaMensual > 0) {
+                                solicitud.pago_mensual_estimado = (solicitud.monto_solicitado * tasaMensual) /
+                                        (1 - Math.pow(1 + tasaMensual, -solicitud.plazo_meses));
+                            } else {
+                                solicitud.pago_mensual_estimado = solicitud.monto_solicitado / solicitud.plazo_meses;
                             }
-                        } else {
-                            Toast.makeText(getContext(), "Completa todos los campos", Toast.LENGTH_SHORT).show();
+
+                            if (listener != null) listener.onEditar(solicitud);
+                        } catch (Exception e) {
+                            Toast.makeText(getContext(), "Datos inválidos", Toast.LENGTH_SHORT).show();
                         }
                     })
                     .setNegativeButton("Cancelar", null)
                     .setNeutralButton("Eliminar", (dialog, which) -> {
-                        if (listener != null) {
-                            listener.onEliminar(solicitud.id_solicitud);
-                        }
+                        if (listener != null) listener.onEliminar(solicitud.id_solicitud);
                     });
 
             return builder.create();
         }
-
     }
 }
