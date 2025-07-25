@@ -320,8 +320,6 @@ public class CrearSolicitudFragment extends Fragment {
         }
     }
 
-
-
     private void configurarModoEdicion() {
         datosValidados = false;
         btnSolicitar.setEnabled(false);
@@ -427,8 +425,6 @@ public class CrearSolicitudFragment extends Fragment {
             dialogCarga.dismiss();
         }
     }
-
-
 
     private void takePhoto() {
         if (imageCapture == null) return;

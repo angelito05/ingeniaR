@@ -52,6 +52,8 @@ public interface UsuarioService {
     Call<List<Cliente>> getClientesPorUsuario(@Path("idUsuario") int idUsuario);
     @GET("api/Cliente/{id}")
     Call<Cliente> getClientePorId(@Path("id") int idCliente);
+    @POST("api/usuario/recuperar")
+    Call<Void> recuperarContrasena(@Body RecuperarRequest request);
     @PUT("api/Cliente/{id}")
     Call<Void> actualizarCliente(@Path("id") int idCliente, @Body Cliente cliente);
 
