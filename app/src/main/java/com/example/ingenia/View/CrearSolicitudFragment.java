@@ -14,6 +14,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.*;
@@ -130,8 +132,25 @@ public class CrearSolicitudFragment extends Fragment {
         btnValidar.setOnClickListener(v -> validarYGuardarCliente());
         btnSolicitar.setOnClickListener(v -> limpiarFormulario());
 
+        inputNombre.addTextChangedListener(new NombreApellidoTextWatcher(inputNombre));
+        inputApellidoPaterno.addTextChangedListener(new NombreApellidoTextWatcher(inputApellidoPaterno));
+        inputApellidoMaterno.addTextChangedListener(new NombreApellidoTextWatcher(inputApellidoMaterno));
+
         // Ajustar tamaño del marco
         ajustarTamanioMarco();
+        inputCurp.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                validarCurpEnTiempoReal(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) { }
+        });
+
 
         // Manejar argumentos (modo solo lectura o edición)
         Bundle args = getArguments();
@@ -175,6 +194,44 @@ public class CrearSolicitudFragment extends Fragment {
                 }
         );
     }
+
+    private class NombreApellidoTextWatcher implements TextWatcher {
+        private final EditText editText;
+
+        public NombreApellidoTextWatcher(EditText editText) {
+            this.editText = editText;
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            validarTexto(s.toString(), editText);
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) { }
+
+        private void validarTexto(String texto, EditText editText) {
+            String regex = "^[A-Za-zÁÉÍÓÚáéíóúÑñ\\s]{1,50}$";
+            if (!texto.matches(regex)) {
+                editText.setError("Solo letras sin símbolos ni números");
+            } else {
+                editText.setError(null);
+            }
+        }
+    }
+
+    private void validarCurpEnTiempoReal(String curp) {
+        String regex = "^[A-Z]{4}\\d{6}[HM][A-Z]{2}[A-Z]{3}[A-Z0-9]\\d$";
+        if (!curp.matches(regex)) {
+            inputCurp.setError("CURP no válida. Revisa el formato.");
+        } else {
+            inputCurp.setError(null); // limpia el error si es válida
+        }
+    }
+
 
     private void cargarDatosModoLectura(Bundle args) {
         inputNombre.setText(args.getString("nombre", ""));
