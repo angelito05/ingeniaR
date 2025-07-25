@@ -49,6 +49,9 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.concurrent.Executor;
 
@@ -232,7 +235,6 @@ public class CrearSolicitudFragment extends Fragment {
         }
     }
 
-
     private void cargarDatosModoLectura(Bundle args) {
         inputNombre.setText(args.getString("nombre", ""));
         inputApellidoPaterno.setText(args.getString("apellido_paterno", ""));
@@ -299,6 +301,27 @@ public class CrearSolicitudFragment extends Fragment {
         }
     }
 
+    private void validarEdad(String fechaNacimientoStr) {
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate fechaNacimiento = LocalDate.parse(fechaNacimientoStr, formatter);
+            LocalDate hoy = LocalDate.now();
+
+            Period edad = Period.between(fechaNacimiento, hoy);
+
+            if (edad.getYears() < 18) {
+                inputFechaNacimiento.setError("Debes tener al menos 18 años");
+            } else {
+                inputFechaNacimiento.setError(null);
+            }
+
+        } catch (Exception e) {
+            inputFechaNacimiento.setError("Fecha inválida");
+        }
+    }
+
+
+
     private void configurarModoEdicion() {
         datosValidados = false;
         btnSolicitar.setEnabled(false);
@@ -313,6 +336,10 @@ public class CrearSolicitudFragment extends Fragment {
             DatePickerDialog picker = new DatePickerDialog(getContext(), (view, y, m, d) -> {
                 String fechaFormateada = String.format("%04d-%02d-%02d", y, m + 1, d);
                 inputFechaNacimiento.setText(fechaFormateada);
+
+                // Validar edad
+                validarEdad(fechaFormateada);
+
             }, year, month, day);
 
             picker.show();
@@ -646,12 +673,10 @@ public class CrearSolicitudFragment extends Fragment {
         inputEstado.setText("");
         inputCp.setText("");
 
-
         labelCurpValida.setText("");
         labelIneValida.setText("");
         datosValidados = false;
         btnSolicitar.setEnabled(false);
-
 
         photoFile = null;
         photoUri = null;
