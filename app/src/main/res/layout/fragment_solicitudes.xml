@@ -21,7 +21,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="?attr/colorOnBackground"
-                android:text="Dashboard"
+                android:text="Solicitudes"
                 android:textSize="24sp"
                 android:textStyle="bold"
                 android:gravity="center"
@@ -53,6 +53,7 @@
                     android:textColor="?attr/colorSecondary"
                     android:textStyle="bold"
                     android:gravity="center" />
+
             </LinearLayout>
 
             <LinearLayout
@@ -171,6 +172,7 @@
                 android:queryHint="Buscar por Nombre o Promotor..."
                 android:layout_marginTop="12dp"
                 android:layout_marginBottom="8dp" />
+
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/chipGroupFiltro"

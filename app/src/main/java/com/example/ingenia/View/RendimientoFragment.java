@@ -15,6 +15,7 @@ import android.widget.*;
 import android.text.TextWatcher;
 import android.text.Editable;
 
+import com.google.android.material.chip.ChipGroup;
 
 
 import androidx.annotation.NonNull;
@@ -50,6 +51,11 @@ public class RendimientoFragment extends Fragment {
     private int idUsuario;
     private PieChart pieChart;
     private Spinner spinnerFiltro;
+    private ChipGroup chipGroupFiltro;
+    private TextView kpiTotalSolicitudes;
+    private TextView kpiMontoAprobado;
+
+
 
     private List<SolicitudCredito> listaCompletaSolicitudes;
     private SolicitudAdapter adapter;
@@ -73,8 +79,21 @@ public class RendimientoFragment extends Fragment {
         pieChart = view.findViewById(R.id.pieChart);
         configurarPieChart();
 
-        spinnerFiltro = view.findViewById(R.id.spinnerFiltro);
-        configurarSpinner();
+        kpiTotalSolicitudes = view.findViewById(R.id.kpiTotalSolicitudes);
+        kpiMontoAprobado = view.findViewById(R.id.kpiMontoAprobado);
+
+
+
+        chipGroupFiltro = view.findViewById(R.id.chipGroupFiltro);
+        chipGroupFiltro.setOnCheckedChangeListener((group, checkedId) -> {
+            int filtro = 0;
+            if (checkedId == R.id.chipPendientes) filtro = 1;
+            else if (checkedId == R.id.chipAprobadas) filtro = 2;
+            else if (checkedId == R.id.chipRechazadas) filtro = 3;
+            filtrarSolicitudes(filtro);
+        });
+
+
 
         SharedPreferences prefs = requireActivity().getSharedPreferences("CrediGoPrefs", getContext().MODE_PRIVATE);
         idUsuario = prefs.getInt("id_usuario", -1);
@@ -99,22 +118,7 @@ public class RendimientoFragment extends Fragment {
         obtenerSolicitudesUsuario();
     }
 
-    private void configurarSpinner() {
-        String[] opciones = {"Todos", "Pendientes", "Aprobadas", "Rechazadas"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), R.layout.spinner_item, opciones);
-        adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
-        spinnerFiltro.setAdapter(adapter);
 
-        spinnerFiltro.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                filtrarSolicitudes(position);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
-        });
-    }
 
     private void configurarPieChart() {
         pieChart.getDescription().setEnabled(false);
@@ -146,7 +150,8 @@ public class RendimientoFragment extends Fragment {
                     );
                     recyclerView.setAdapter(adapter);
 
-                    filtrarSolicitudes(spinnerFiltro.getSelectedItemPosition());
+                    filtrarSolicitudes(0); // por defecto: mostrar todos
+
                 } else {
                     Toast.makeText(getContext(), "No se pudieron obtener las solicitudes", Toast.LENGTH_SHORT).show();
                 }
@@ -158,36 +163,60 @@ public class RendimientoFragment extends Fragment {
             }
         });
     }
+    private int obtenerFiltroSeleccionado() {
+        int checkedId = chipGroupFiltro.getCheckedChipId();
+        if (checkedId == R.id.chipPendientes) return 1;
+        else if (checkedId == R.id.chipAprobadas) return 2;
+        else if (checkedId == R.id.chipRechazadas) return 3;
+        return 0; // Todos
+    }
+
+
 
     private void filtrarSolicitudes(int filtroSeleccionado) {
         if (listaCompletaSolicitudes == null) return;
 
         List<SolicitudCredito> filtradas = new ArrayList<>();
         int pendientes = 0, aprobadas = 0, rechazadas = 0;
+        double montoAprobadoTotal = 0;
 
         for (SolicitudCredito s : listaCompletaSolicitudes) {
-            if (filtroSeleccionado == 0 || // Todos
+            if (filtroSeleccionado == 0 ||
                     (filtroSeleccionado == 1 && s.id_estatus == 1) ||
                     (filtroSeleccionado == 2 && s.id_estatus == 2) ||
                     (filtroSeleccionado == 3 && s.id_estatus == 3)) {
+
                 filtradas.add(s);
 
-                // Contar solo los filtrados para el gráfico:
+                // Contar para gráfico:
                 switch (s.id_estatus) {
                     case 1: pendientes++; break;
-                    case 2: aprobadas++; break;
+                    case 2:
+                        aprobadas++;
+                        montoAprobadoTotal += s.monto_solicitado;  // sumar monto aprobado
+                        break;
                     case 3: rechazadas++; break;
                 }
             }
         }
 
-        // Actualiza el adapter con la lista filtrada
         if (adapter != null) {
             adapter.actualizarLista(filtradas);
         }
 
-        // Actualizar gráfico con los datos filtrados:
         actualizarGrafico(pendientes, aprobadas, rechazadas);
+
+        // Actualizar KPIs
+        actualizarKPIs(filtradas.size(), montoAprobadoTotal);
+    }
+
+    private void actualizarKPIs(int totalSolicitudes, double montoAprobado) {
+        if (kpiTotalSolicitudes != null) {
+            kpiTotalSolicitudes.setText("Total: " + totalSolicitudes);
+        }
+        if (kpiMontoAprobado != null) {
+            kpiMontoAprobado.setText(String.format(Locale.getDefault(), "Monto Aprobado: $%.2f", montoAprobado));
+        }
     }
 
 
@@ -290,7 +319,8 @@ public class RendimientoFragment extends Fragment {
                             break;
                         }
                     }
-                    filtrarSolicitudes(spinnerFiltro.getSelectedItemPosition());
+                    filtrarSolicitudes(obtenerFiltroSeleccionado());
+
                     Toast.makeText(getContext(), "Solicitud actualizada", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(getContext(), "Error al actualizar solicitud", Toast.LENGTH_SHORT).show();
@@ -316,7 +346,8 @@ public class RendimientoFragment extends Fragment {
                             break;
                         }
                     }
-                    filtrarSolicitudes(spinnerFiltro.getSelectedItemPosition());
+                    filtrarSolicitudes(obtenerFiltroSeleccionado());
+
                     Toast.makeText(getContext(), "Solicitud eliminada", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(getContext(), "Error al eliminar solicitud", Toast.LENGTH_SHORT).show();
