@@ -1,76 +1,273 @@
-<androidx.core.widget.NestedScrollView
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/scrollView"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/swipeRefresh"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:layout_height="match_parent">
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
-        <!-- Título -->
-        <TextView
-            android:id="@+id/tituloSolicitudes"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/text_primary"
-            android:text="Dashboard"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginBottom="16dp" />
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <!-- Contadores -->
-        <TextView
-            android:id="@+id/contadorTotal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Total de solicitudes: 0"
-            android:textColor="@color/text_primary"
-            android:textSize="16sp" />
+            <TextView
+                android:id="@+id/tituloSolicitudes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="?attr/colorOnBackground"
+                android:text="Dashboard"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginBottom="16dp" />
 
-        <TextView
-            android:id="@+id/contadorAprobadas"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Aprobadas: 0"
-            android:textColor="@color/text_primary"
-            android:textSize="16sp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="8dp">
 
-        <TextView
-            android:id="@+id/contadorRechazadas"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Rechazadas: 0"
-            android:textColor="@color/text_primary"
-            android:textSize="16sp"
-            android:layout_marginBottom="8dp" />
+                <TextView
+                    android:id="@+id/kpiTasaAprobacion"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="Tasa: --"
+                    android:textColor="?attr/colorPrimary"
+                    android:textStyle="bold"
+                    android:gravity="center" />
 
-        <!-- Gráfico -->
-        <com.github.mikephil.charting.charts.BarChart
-            android:id="@+id/barChart"
+                <TextView
+                    android:id="@+id/kpiMontoTotal"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="Monto: --"
+                    android:textColor="?attr/colorSecondary"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Título -->
+                <TextView
+                    android:id="@+id/tituloSolicitudestodas"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Solicitudes"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnBackground"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Contadores en fila horizontal -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:weightSum="3">
+
+                    <TextView
+                        android:id="@+id/contadorTotal"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Total: 0"
+                        android:textColor="?attr/colorOnBackground"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/contadorAprobadas"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Aprobadas: 0"
+                        android:textColor="?attr/colorOnBackground"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/contadorRechazadas"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Rechazadas: 0"
+                        android:textColor="?attr/colorOnBackground"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/barChart"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:layout_marginTop="8dp" />
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_marginTop="16dp"/>
-
-        <!-- Filtro -->
-        <Spinner
-            android:id="@+id/spinnerFiltroAdmin"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/Widget.CrediGo.Spinner"
-            android:layout_margin="16dp"/>
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <!-- RecyclerView para solicitudes -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerSolicitudes"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            <!-- Título -->
+            <TextView
+                android:id="@+id/tituloCiudades"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ciudades"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnBackground"
+                android:layout_marginBottom="8dp" />
+        </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerMunicipios"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:layout_marginTop="12dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:overScrollMode="never"
+                android:nestedScrollingEnabled="false" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Título -->
+                <TextView
+                    android:id="@+id/tituloBusqueda"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Buscar"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnBackground"
+                    android:layout_marginBottom="8dp" />
+            </LinearLayout>
+
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/searchView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:queryHint="Buscar por Nombre o Promotor..."
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupFiltro"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipTodos"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:text="Todos"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipPendientes"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:text="Pendientes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipAprobadas"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:text="Aprobadas"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipRechazadas"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:text="Rechazadas"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </com.google.android.material.chip.ChipGroup>
+
+            <LinearLayout
+                android:id="@+id/kpiContenedorExtra"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="8dp"
+                android:layout_marginTop="8dp">
+
+
+                <TextView
+                    android:id="@+id/kpiMejorPromotor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="MEJOR PROMOTOR: -"
+                    android:textColor="?attr/colorPrimary"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerSolicitudes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:layout_marginTop="16dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Título -->
+                <TextView
+                    android:id="@+id/tituloBitacora"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Historial Verificaciones"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnBackground"
+                    android:layout_marginBottom="8dp" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerBitacora"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:overScrollMode="never"
             android:nestedScrollingEnabled="false"
-            android:layout_marginTop="16dp"/>
 
-    </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+             />
+
+
+
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

@@ -23,7 +23,7 @@ import retrofit2.http.Path;
 import retrofit2.http.Multipart;
 import retrofit2.http.Part;
 import okhttp3.MultipartBody;
-
+import retrofit2.http.Query;
 
 public interface UsuarioService {
     @POST("api/usuario/login")
@@ -97,6 +97,8 @@ public interface UsuarioService {
     @Streaming
     Call<ResponseBody> descargarPDF(@Path("id") int id);
 
+    @GET("api/Bitacora/ultimos-con-detalles")
+    Call<List<BitacoraDTO>> getUltimosConDetalles(@Query("cantidad") int cantidad);
 
 
 
