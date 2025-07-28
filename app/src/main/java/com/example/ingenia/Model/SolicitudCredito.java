@@ -12,6 +12,10 @@ public class SolicitudCredito implements Serializable {
     public String fecha_solicitud;
     public String observaciones;
     public int id_estatus;
+    public String ciudadCliente;
+    public String estadoCliente;
+
+
 
     public double tasa_interes;  // NUEVO
     public double pago_mensual_estimado;  // NUEVO

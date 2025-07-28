@@ -53,6 +53,8 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.lottie)
     implementation(libs.androidx.security.crypto)
+    implementation(libs.swiperefreshlayout)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
