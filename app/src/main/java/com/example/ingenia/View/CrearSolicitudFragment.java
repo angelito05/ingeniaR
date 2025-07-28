@@ -134,10 +134,9 @@ public class CrearSolicitudFragment extends Fragment {
         btnFlashToggle.setOnClickListener(v -> toggleFlash());
         btnValidar.setOnClickListener(v -> validarYGuardarCliente());
         btnSolicitar.setOnClickListener(v -> limpiarFormulario());
-
-        inputNombre.addTextChangedListener(new NombreApellidoTextWatcher(inputNombre));
-        inputApellidoPaterno.addTextChangedListener(new NombreApellidoTextWatcher(inputApellidoPaterno));
-        inputApellidoMaterno.addTextChangedListener(new NombreApellidoTextWatcher(inputApellidoMaterno));
+        inputNombre.addTextChangedListener(new NombreApellidoTextWatcher(inputNombre, this));
+        inputApellidoPaterno.addTextChangedListener(new NombreApellidoTextWatcher(inputApellidoPaterno, this));
+        inputApellidoMaterno.addTextChangedListener(new NombreApellidoTextWatcher(inputApellidoMaterno, this));
 
         // Ajustar tamaño del marco
         ajustarTamanioMarco();
@@ -154,6 +153,18 @@ public class CrearSolicitudFragment extends Fragment {
             public void afterTextChanged(Editable s) { }
         });
 
+        inputClaveElector.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                validarClaveElectorEnTiempoReal(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) { }
+        });
 
         // Manejar argumentos (modo solo lectura o edición)
         Bundle args = getArguments();
@@ -198,11 +209,27 @@ public class CrearSolicitudFragment extends Fragment {
         );
     }
 
+    private void verificarCamposValidos() {
+        boolean nombreValido = inputNombre.getError() == null && !inputNombre.getText().toString().trim().isEmpty();
+        boolean apellidoPValido = inputApellidoPaterno.getError() == null && !inputApellidoPaterno.getText().toString().trim().isEmpty();
+        boolean apellidoMValido = inputApellidoMaterno.getError() == null && !inputApellidoMaterno.getText().toString().trim().isEmpty();
+        boolean curpValido = inputCurp.getError() == null && !inputCurp.getText().toString().trim().isEmpty();
+        boolean claveElectorValido = inputClaveElector.getError() == null && !inputClaveElector.getText().toString().trim().isEmpty();
+
+        boolean todosValidos = nombreValido && apellidoPValido && apellidoMValido && curpValido && claveElectorValido;
+
+        btnValidar.setEnabled(todosValidos);
+    }
+
+
+
     private class NombreApellidoTextWatcher implements TextWatcher {
         private final EditText editText;
+        private final CrearSolicitudFragment fragment;
 
-        public NombreApellidoTextWatcher(EditText editText) {
+        public NombreApellidoTextWatcher(EditText editText,CrearSolicitudFragment fragment) {
             this.editText = editText;
+            this.fragment = fragment;
         }
 
         @Override
@@ -223,6 +250,7 @@ public class CrearSolicitudFragment extends Fragment {
             } else {
                 editText.setError(null);
             }
+            verificarCamposValidos();
         }
     }
 
@@ -233,6 +261,7 @@ public class CrearSolicitudFragment extends Fragment {
         } else {
             inputCurp.setError(null); // limpia el error si es válida
         }
+        verificarCamposValidos();
     }
 
     private void cargarDatosModoLectura(Bundle args) {
@@ -301,6 +330,21 @@ public class CrearSolicitudFragment extends Fragment {
         }
     }
 
+    private void validarClaveElectorEnTiempoReal(String clave) {
+        String regex = "^[A-Z]{6}\\d{6}\\d{2}[HM][A-Z0-9]{3}$";
+
+        if (!clave.matches(regex)) {
+            inputClaveElector.setError("Clave de elector inválida. Verifica el formato.");
+            labelIneValida.setText("");
+        } else {
+            inputClaveElector.setError(null);
+            labelIneValida.setText("CLAVE DE ELECTOR VÁLIDA");
+            labelIneValida.setTextColor(requireContext().getColor(android.R.color.holo_green_dark));
+        }
+        verificarCamposValidos();
+    }
+
+
     private void validarEdad(String fechaNacimientoStr) {
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -318,6 +362,7 @@ public class CrearSolicitudFragment extends Fragment {
         } catch (Exception e) {
             inputFechaNacimiento.setError("Fecha inválida");
         }
+        verificarCamposValidos();
     }
 
     private void configurarModoEdicion() {
@@ -547,15 +592,15 @@ public class CrearSolicitudFragment extends Fragment {
         String codigoPostal = inputCp.getText().toString().trim();
 
         if (nombre.isEmpty() || curp.isEmpty() || photoFile == null) {
-            ocultarPantallaCarga(); //Ocultar si hay error temprano
             Toast.makeText(getContext(), "Datos incompletos o INE no capturado", Toast.LENGTH_SHORT).show();
+            ocultarPantallaCarga();
             return;
         }
 
         int idUsuario = obtenerIdUsuario();
         if (idUsuario == -1) {
-            ocultarPantallaCarga();
             Toast.makeText(getContext(), "Error: no se encontró el usuario logeado", Toast.LENGTH_SHORT).show();
+            ocultarPantallaCarga();
             return;
         }
 
