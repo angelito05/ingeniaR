@@ -14,6 +14,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.*;
@@ -47,6 +49,9 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.concurrent.Executor;
 
@@ -130,8 +135,25 @@ public class CrearSolicitudFragment extends Fragment {
         btnValidar.setOnClickListener(v -> validarYGuardarCliente());
         btnSolicitar.setOnClickListener(v -> limpiarFormulario());
 
+        inputNombre.addTextChangedListener(new NombreApellidoTextWatcher(inputNombre));
+        inputApellidoPaterno.addTextChangedListener(new NombreApellidoTextWatcher(inputApellidoPaterno));
+        inputApellidoMaterno.addTextChangedListener(new NombreApellidoTextWatcher(inputApellidoMaterno));
+
         // Ajustar tamaño del marco
         ajustarTamanioMarco();
+        inputCurp.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                validarCurpEnTiempoReal(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) { }
+        });
+
 
         // Manejar argumentos (modo solo lectura o edición)
         Bundle args = getArguments();
@@ -174,6 +196,43 @@ public class CrearSolicitudFragment extends Fragment {
                     }
                 }
         );
+    }
+
+    private class NombreApellidoTextWatcher implements TextWatcher {
+        private final EditText editText;
+
+        public NombreApellidoTextWatcher(EditText editText) {
+            this.editText = editText;
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            validarTexto(s.toString(), editText);
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) { }
+
+        private void validarTexto(String texto, EditText editText) {
+            String regex = "^[A-Za-zÁÉÍÓÚáéíóúÑñ\\s]{1,50}$";
+            if (!texto.matches(regex)) {
+                editText.setError("Solo letras sin símbolos ni números");
+            } else {
+                editText.setError(null);
+            }
+        }
+    }
+
+    private void validarCurpEnTiempoReal(String curp) {
+        String regex = "^[A-Z]{4}\\d{6}[HM][A-Z]{2}[A-Z]{3}[A-Z0-9]\\d$";
+        if (!curp.matches(regex)) {
+            inputCurp.setError("CURP no válida. Revisa el formato.");
+        } else {
+            inputCurp.setError(null); // limpia el error si es válida
+        }
     }
 
     private void cargarDatosModoLectura(Bundle args) {
@@ -242,6 +301,25 @@ public class CrearSolicitudFragment extends Fragment {
         }
     }
 
+    private void validarEdad(String fechaNacimientoStr) {
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate fechaNacimiento = LocalDate.parse(fechaNacimientoStr, formatter);
+            LocalDate hoy = LocalDate.now();
+
+            Period edad = Period.between(fechaNacimiento, hoy);
+
+            if (edad.getYears() < 18) {
+                inputFechaNacimiento.setError("Debes tener al menos 18 años");
+            } else {
+                inputFechaNacimiento.setError(null);
+            }
+
+        } catch (Exception e) {
+            inputFechaNacimiento.setError("Fecha inválida");
+        }
+    }
+
     private void configurarModoEdicion() {
         datosValidados = false;
         btnSolicitar.setEnabled(false);
@@ -256,6 +334,10 @@ public class CrearSolicitudFragment extends Fragment {
             DatePickerDialog picker = new DatePickerDialog(getContext(), (view, y, m, d) -> {
                 String fechaFormateada = String.format("%04d-%02d-%02d", y, m + 1, d);
                 inputFechaNacimiento.setText(fechaFormateada);
+
+                // Validar edad
+                validarEdad(fechaFormateada);
+
             }, year, month, day);
 
             picker.show();
@@ -343,8 +425,6 @@ public class CrearSolicitudFragment extends Fragment {
             dialogCarga.dismiss();
         }
     }
-
-
 
     private void takePhoto() {
         if (imageCapture == null) return;
@@ -589,12 +669,10 @@ public class CrearSolicitudFragment extends Fragment {
         inputEstado.setText("");
         inputCp.setText("");
 
-
         labelCurpValida.setText("");
         labelIneValida.setText("");
         datosValidados = false;
         btnSolicitar.setEnabled(false);
-
 
         photoFile = null;
         photoUri = null;

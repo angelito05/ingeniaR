@@ -16,6 +16,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.ingenia.Model.LoginRequest;
+import com.example.ingenia.Model.RecuperarRequest;
 import com.example.ingenia.Model.User;
 import com.example.ingenia.R;
 import com.example.ingenia.Util.SecurePrefsHelper;
@@ -128,6 +129,32 @@ public class LoginActivity extends AppCompatActivity {
                 public void onFailure(Call<User> call, Throwable t) {
                     Toast.makeText(LoginActivity.this, "Error de conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
                     Log.e("API_ERROR", "Falló la petición: ", t);
+                }
+            });
+        });
+
+        binding.tvOlvidasteContra.setOnClickListener(v -> {
+            String correo = binding.txtUsuario.getText().toString().trim();
+
+            if (correo.isEmpty()) {
+                Toast.makeText(this, "Por favor ingresa tu correo en el campo de usuario", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            UsuarioService service = ApiConfig.getRetrofit().create(UsuarioService.class);
+            service.recuperarContrasena(new RecuperarRequest(correo)).enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(LoginActivity.this, "Se envió un correo con instrucciones", Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(LoginActivity.this, "No se pudo enviar el correo. Verifica el correo ingresado", Toast.LENGTH_LONG).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    Toast.makeText(LoginActivity.this, "Error de conexión: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         });
