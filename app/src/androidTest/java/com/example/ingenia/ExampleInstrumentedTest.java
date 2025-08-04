@@ -1,4 +1,4 @@
-package com.example.ingenia;
+package com.credigo.ingenia;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.example.ingenia", appContext.getPackageName());
+        assertEquals("com.credigo.ingenia", appContext.getPackageName());
     }
 }

@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.ingenia"
+    namespace = "com.credigo.ingenia"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.ingenia"
+        applicationId = "com.credigo.ingenia"
         minSdk = 29
         targetSdk = 35
         versionCode = 1

@@ -1,4 +1,4 @@
-package com.example.ingenia;
+package com.credigo.ingenia;
 
 import org.junit.Test;
 
